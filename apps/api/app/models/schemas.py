@@ -21,9 +21,9 @@ class CheckinCreate(BaseModel):
 
 class DriverItem(BaseModel):
     kind: str
-    contribution: float
-    label: str
-    z_score: float
+    contribution: float = 0.0
+    label: Optional[str] = "Normal baseline variance"
+    z_score: Optional[float] = 0.0
 
 class CapacityResponse(BaseModel):
     score: float

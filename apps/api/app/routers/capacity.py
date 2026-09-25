@@ -84,13 +84,23 @@ def get_current_capacity(
     if is_persistent_low:
         status_label += " (Low trend: consider talking to someone)"
 
+    # Clean drivers to ensure label and z_score are populated
+    clean_drivers = []
+    for d in drivers:
+        clean_drivers.append({
+            "kind": d.get("kind", "signal"),
+            "contribution": d.get("contribution", 0.0),
+            "label": d.get("label") or f"{d.get('kind', 'Signal').replace('_', ' ').title()} variation",
+            "z_score": d.get("z_score", 0.0)
+        })
+
     return CapacityResponse(
         score=score,
         baseline=baseline,
         delta=delta,
         is_drop=is_drop,
         status_label=status_label,
-        drivers=drivers,
+        drivers=clean_drivers,
         sparkline=sparkline_data,
         last_updated=last_updated
     )

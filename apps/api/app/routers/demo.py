@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, Query, HTTPException
 from sqlmodel import Session, select, delete
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import random
 import json
 
@@ -79,7 +79,7 @@ def seed_demo_persona(
     session.commit()
 
     # Generate 14 days of realistic history
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
     signals = []
     snapshots = []
 
@@ -197,7 +197,7 @@ async def trigger_capacity_drop(
     Injects acute drop signals, computes capacity, and creates an intervention.
     """
     user_id = "user_default"
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
     user = session.get(User, user_id)
     if not user:
         user = User(id=user_id, display_name="Aarav Sharma")
@@ -317,7 +317,7 @@ def timewarp_window(
     # Mark as timewarped and shift chosen_at back in time to simulate window elapsed
     TIMEWARPED_INTERVENTIONS.add(active.id)
     active.status = "started"
-    active.chosen_at = datetime.utcnow() - timedelta(minutes=active.window_minutes + 1)
+    active.chosen_at = datetime.now(timezone.utc) - timedelta(minutes=active.window_minutes + 1)
     session.add(active)
     session.commit()
 

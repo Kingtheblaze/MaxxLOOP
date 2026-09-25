@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Query
 from sqlmodel import Session, select
 from typing import Dict, Any, List
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import numpy as np
 
 from app.core.database import get_session
@@ -103,7 +103,7 @@ def get_insights(
     # Weekly trend
     weekly_trend = []
     for day_offset in range(6, -1, -1):
-        day_date = datetime.utcnow() - timedelta(days=day_offset)
+        day_date = datetime.now(timezone.utc) - timedelta(days=day_offset)
         start_day = day_date.replace(hour=0, minute=0, second=0)
         end_day = day_date.replace(hour=23, minute=59, second=59)
         day_snaps = [

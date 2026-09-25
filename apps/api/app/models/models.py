@@ -1,13 +1,16 @@
 from typing import Optional, List, Dict, Any
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlmodel import SQLModel, Field, Relationship
 import json
+
+def now_utc() -> datetime:
+    return datetime.now(timezone.utc)
 
 class User(SQLModel, table=True):
     id: str = Field(default="user_default", primary_key=True)
     display_name: str = Field(default="Maxx User")
     timezone: str = Field(default="UTC")
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=now_utc)
     
     # Consent flags
     consent_calendar: bool = Field(default=True)
@@ -18,7 +21,7 @@ class User(SQLModel, table=True):
 class Signal(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     user_id: str = Field(index=True)
-    ts: datetime = Field(default_factory=datetime.utcnow, index=True)
+    ts: datetime = Field(default_factory=now_utc, index=True)
     kind: str = Field(index=True) # focus_self, energy_self, stress_self, sleep_hours, etc.
     value: float
     source: str = Field(default="self_report") # self_report | calendar | browser | manual | import | demo
@@ -26,7 +29,7 @@ class Signal(SQLModel, table=True):
 class CapacitySnapshot(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     user_id: str = Field(index=True)
-    ts: datetime = Field(default_factory=datetime.utcnow, index=True)
+    ts: datetime = Field(default_factory=now_utc, index=True)
     score: float # 0 - 100
     baseline: float # 0 - 100
     delta: float # score - baseline
@@ -50,7 +53,7 @@ class Intervention(SQLModel, table=True):
     user_id: str = Field(index=True)
     snapshot_id: int = Field(index=True)
     action_id: str = Field(index=True)
-    chosen_at: datetime = Field(default_factory=datetime.utcnow)
+    chosen_at: datetime = Field(default_factory=now_utc)
     window_minutes: int = Field(default=25)
     status: str = Field(default="offered") # offered | started | completed | skipped
     explanation_json: str = Field(default="{}") # {headline, why, action_intro, encouragement}
@@ -86,4 +89,4 @@ class ActionPrior(SQLModel, table=True):
     action_id: str = Field(index=True)
     alpha: float = Field(default=1.0)
     beta: float = Field(default=1.0)
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=now_utc)

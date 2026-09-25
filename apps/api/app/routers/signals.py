@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlmodel import Session, select
 from typing import List, Optional
-from datetime import datetime
+from datetime import datetime, timezone
 
 from app.core.database import get_session
 from app.models.models import Signal, User
@@ -32,7 +32,7 @@ def ingest_signal(
         kind=signal_in.kind,
         value=signal_in.value,
         source=signal_in.source,
-        ts=signal_in.ts or datetime.utcnow()
+        ts=signal_in.ts or datetime.now(timezone.utc)
     )
     session.add(sig)
     session.commit()
@@ -63,7 +63,7 @@ def ingest_signal_batch(
             kind=s.kind,
             value=s.value,
             source=s.source,
-            ts=s.ts or datetime.utcnow()
+            ts=s.ts or datetime.now(timezone.utc)
         )
         session.add(sig)
         saved_count += 1

@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlmodel import Session, select
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional, Dict, Any
 import json
 
@@ -67,7 +67,7 @@ def get_active_loop(
     explanation_obj = ExplanationSchema(**intervention.explanation)
 
     # Determine stage and time remaining
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
     is_warped = intervention.id in TIMEWARPED_INTERVENTIONS
     window_sec = settings.TIMEWARP_SECONDS if is_warped else (intervention.window_minutes * 60)
 
@@ -111,7 +111,7 @@ def start_loop_action(
         raise HTTPException(status_code=404, detail="Intervention not found")
 
     intervention.status = "started"
-    intervention.chosen_at = datetime.utcnow() # Reset timer to start
+    intervention.chosen_at = datetime.now(timezone.utc) # Reset timer to start
     session.add(intervention)
     session.commit()
     return {"status": "started", "intervention_id": intervention.id}
@@ -151,7 +151,7 @@ def measure_loop_outcome(
     pre_snap = session.exec(snap_stmt).first()
     pre_score = pre_snap.score if pre_snap else 40.0
 
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
 
     # Record post-check-in signals
     signals_to_add = [

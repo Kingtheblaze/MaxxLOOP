@@ -1,6 +1,6 @@
 import yaml
 import os
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Dict, Any, List, Tuple
 import numpy as np
 from sqlmodel import Session, select
@@ -62,7 +62,7 @@ class BaselineEngine:
         robust_spread = 1.4826 * MAD.
         Pulls last 14 days of data.
         """
-        target_time = target_time or datetime.utcnow()
+        target_time = target_time or datetime.now(timezone.utc)
         cutoff = target_time - timedelta(days=14)
         target_bucket = get_time_bucket(target_time)
 

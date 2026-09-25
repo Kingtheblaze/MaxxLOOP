@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlmodel import Session, select
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, Any
 
 from app.core.database import get_session
@@ -40,7 +40,7 @@ async def create_checkin(
         session.add(user)
         session.commit()
 
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
 
     # 2. Ingest self-report signals
     signals_to_add = [

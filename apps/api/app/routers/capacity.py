@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, Query
 from sqlmodel import Session, select
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import List, Dict, Any
 
 from app.core.database import get_session
@@ -32,7 +32,7 @@ def get_current_capacity(
     latest_snapshot = session.exec(stmt).first()
 
     # Get 14-day history for sparkline
-    cutoff = datetime.utcnow() - timedelta(days=14)
+    cutoff = datetime.now(timezone.utc) - timedelta(days=14)
     sparkline_stmt = (
         select(CapacitySnapshot)
         .where(CapacitySnapshot.user_id == user_id)
@@ -69,7 +69,7 @@ def get_current_capacity(
         delta = 0.0
         is_drop = False
         drivers = []
-        last_updated = datetime.utcnow()
+        last_updated = datetime.now(timezone.utc)
 
     # Determine status label
     if is_drop:

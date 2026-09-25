@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Tuple, List, Optional
 from sqlmodel import Session, select
 from app.models.models import CapacitySnapshot, Intervention
@@ -19,7 +19,7 @@ class DropDetectionEngine:
         - Min 45 minutes since last intervention.
         Returns: (is_allowed, reason)
         """
-        now = now or datetime.utcnow()
+        now = now or datetime.now(timezone.utc)
         twenty_four_hours_ago = now - timedelta(hours=24)
         min_cooldown_time = now - timedelta(minutes=self.min_cooldown_minutes)
 
@@ -58,7 +58,7 @@ class DropDetectionEngine:
         Rule 2: score falls at least 15 points across last two snapshots
         Returns: (is_drop, reason)
         """
-        now = now or datetime.utcnow()
+        now = now or datetime.now(timezone.utc)
         delta = current_score - baseline_score
 
         # Dynamic threshold: max(10, 1.0 * robust_spread)

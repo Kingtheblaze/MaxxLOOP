@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Tuple, Dict, Any, List, Optional
 import numpy as np
 from scipy import stats
@@ -125,7 +125,7 @@ class MeasurementEngine:
                 prior.alpha += 1.0
             else:
                 prior.beta += 1.0
-            prior.updated_at = datetime.utcnow()
+            prior.updated_at = datetime.now(timezone.utc)
             self.session.add(prior)
 
         self.session.commit()

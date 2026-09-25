@@ -105,7 +105,7 @@ def get_insights(
     for day_offset in range(6, -1, -1):
         day_date = datetime.utcnow() - timedelta(days=day_offset)
         start_day = day_date.replace(hour=0, minute=0, second=0)
-        end_day = day_date.replace(hour=23, minute=59, 59)
+        end_day = day_date.replace(hour=23, minute=59, second=59)
         day_snaps = [
             s for s in session.exec(
                 select(CapacitySnapshot)

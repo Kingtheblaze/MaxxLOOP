@@ -1,0 +1,32 @@
+# Population Priors for cold start baseline estimation (used when user has < 5 data points)
+priors:
+  focus_self:
+    median: 3.5
+    mad: 0.8
+  energy_self:
+    median: 3.2
+    mad: 0.8
+  stress_self:
+    median: 2.6
+    mad: 0.7
+  sleep_hours:
+    median: 7.2
+    mad: 1.0
+  meeting_minutes:
+    median: 120.0
+    mad: 45.0
+  back_to_back_count:
+    median: 1.0
+    mad: 1.0
+  context_switches_per_hour:
+    median: 14.0
+    mad: 6.0
+  screen_minutes:
+    median: 320.0
+    mad: 60.0
+  movement_minutes:
+    median: 35.0
+    mad: 15.0
+  hours_since_break:
+    median: 2.0
+    mad: 0.8

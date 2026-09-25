@@ -1,0 +1,389 @@
+[
+  {
+    "id": "box_breathing_4x4",
+    "title": "4x4 Box Breathing",
+    "one_line_why": "Balances autonomic tone and dampens acute sympathetic stress in 3 minutes.",
+    "steps": [
+      "Inhale through nose for 4 counts",
+      "Hold with lungs full for 4 counts",
+      "Slow exhale through mouth for 4 counts",
+      "Hold empty for 4 counts. Repeat 4 cycles."
+    ],
+    "duration_min": 3,
+    "category": "breathing",
+    "target_drivers": ["stress_self", "context_switches_per_hour"],
+    "caution_note": "If you feel lightheaded, resume normal breathing immediately.",
+    "prior_effect": 0.65,
+    "risk_level": "low"
+  },
+  {
+    "id": "physiological_sigh",
+    "title": "Dual Inhale Physiological Sigh",
+    "one_line_why": "Fastest biological mechanism to trigger vagal parasympathetic recovery.",
+    "steps": [
+      "Take two deep inhales through your nose (one deep, followed immediately by a sharp top-up)",
+      "Exhale slowly and fully through your mouth with a soft sigh",
+      "Repeat 3 to 5 times at your own pace"
+    ],
+    "duration_min": 2,
+    "category": "breathing",
+    "target_drivers": ["stress_self", "back_to_back_count"],
+    "caution_note": "Do not force your breath if you have respiratory discomfort.",
+    "prior_effect": 0.70,
+    "risk_level": "low"
+  },
+  {
+    "id": "cool_hydration_reset",
+    "title": "Cold Water Electrolyte Reset",
+    "one_line_why": "Replenishes micro-cellular hydration to counter cognitive sluggishness.",
+    "steps": [
+      "Step away from your desk to the water station",
+      "Slowly drink 250-350ml of cool water",
+      "Splash cool water lightly on your face or wrists before sitting back"
+    ],
+    "duration_min": 3,
+    "category": "hydration",
+    "target_drivers": ["energy_self", "hours_since_break"],
+    "caution_note": "Sip slowly; avoid gulping freezing water too rapidly.",
+    "prior_effect": 0.60,
+    "risk_level": "low"
+  },
+  {
+    "id": "window_lux_exposure",
+    "title": "Natural Daylight Eye Reset",
+    "one_line_why": "Stimulates retinal ganglion cells to suppress melatonin and elevate alertness.",
+    "steps": [
+      "Walk to a bright window or step onto a balcony",
+      "Look toward natural daylight (do NOT look directly into the sun)",
+      "Let your eyes relax into a panoramic field of view for 3 minutes"
+    ],
+    "duration_min": 4,
+    "category": "light",
+    "target_drivers": ["energy_self", "sleep_hours"],
+    "caution_note": "Never stare directly at the sun.",
+    "prior_effect": 0.68,
+    "risk_level": "low"
+  },
+  {
+    "id": "spine_decompression_reach",
+    "title": "Doorframe Chest & Spine Stretch",
+    "one_line_why": "Reverses postural kyphosis and opens diaphragm for deeper respiratory oxygenation.",
+    "steps": [
+      "Stand inside a doorway and place forearms flat on the frame",
+      "Step one foot forward until you feel a gentle chest stretch",
+      "Hold for 30 seconds with calm nasal breathing",
+      "Switch leading foot and repeat"
+    ],
+    "duration_min": 3,
+    "category": "posture",
+    "target_drivers": ["hours_since_break", "meeting_minutes"],
+    "caution_note": "Gentle stretch only; do not strain shoulders or lower back.",
+    "prior_effect": 0.58,
+    "risk_level": "low"
+  },
+  {
+    "id": "brisk_hallway_walk",
+    "title": "5-Minute Corridor Stride",
+    "one_line_why": "Activates calf muscle pumps to boost cerebral blood flow and clear mental fog.",
+    "steps": [
+      "Leave your phone and screen at your desk",
+      "Walk briskly down the corridor, hallway, or around the block",
+      "Keep eyes forward and allow arms to swing naturally"
+    ],
+    "duration_min": 5,
+    "category": "movement",
+    "target_drivers": ["movement_minutes", "energy_self", "hours_since_break"],
+    "caution_note": "Wear stable footwear.",
+    "prior_effect": 0.72,
+    "risk_level": "low"
+  },
+  {
+    "id": "single_tab_cleanse",
+    "title": "Single-Tab Sensory Lockdown",
+    "one_line_why": "Eliminates attentional residue caused by continuous peripheral distractions.",
+    "steps": [
+      "Close or minimize all background windows and notification drawers",
+      "Keep exactly ONE working document or tab visible on screen",
+      "Put your mobile phone facedown out of arm's reach for the next sprint"
+    ],
+    "duration_min": 2,
+    "category": "task-switch",
+    "target_drivers": ["context_switches_per_hour", "focus_self"],
+    "caution_note": "Bookmark critical work before closing tabs.",
+    "prior_effect": 0.75,
+    "risk_level": "low"
+  },
+  {
+    "id": "two_minute_braindump",
+    "title": "2-Minute Cognitive Offload",
+    "one_line_why": "Unburdens working memory by transferring looping open loops to physical paper.",
+    "steps": [
+      "Take a blank piece of paper and a pen",
+      "Jot down every unfinished thought, worry, or pending chore in 120 seconds",
+      "Draw a box around only the single next step you will tackle"
+    ],
+    "duration_min": 3,
+    "category": "planning",
+    "target_drivers": ["focus_self", "stress_self"],
+    "caution_note": "Write freely; do not organize or format while writing.",
+    "prior_effect": 0.69,
+    "risk_level": "low"
+  },
+  {
+    "id": "binaural_brown_noise",
+    "title": "Acoustic Masking Calibration",
+    "one_line_why": "Masks unpredictable ambient frequency spikes that trigger micro-arousals.",
+    "steps": [
+      "Put on headphones with brown noise or low-frequency ambient drone",
+      "Set volume to a gentle 50% background level",
+      "Work with the soundscape for the upcoming focus window"
+    ],
+    "duration_min": 2,
+    "category": "noise",
+    "target_drivers": ["context_switches_per_hour", "focus_self"],
+    "caution_note": "Keep volume at a safe, moderate listening level.",
+    "prior_effect": 0.62,
+    "risk_level": "low"
+  },
+  {
+    "id": "micro_social_ping",
+    "title": "60-Second Human Connection",
+    "one_line_why": "Quick prosocial interaction releases oxytocin to reset isolation fatigue.",
+    "steps": [
+      "Send a quick 1-line message of gratitude or encouragement to a colleague or friend",
+      "Or share a brief 30-second pleasant check-in with someone nearby",
+      "Return to your task feeling grounded"
+    ],
+    "duration_min": 2,
+    "category": "social",
+    "target_drivers": ["stress_self", "energy_self"],
+    "caution_note": "Keep it to a micro-ping; avoid diving into long discussions.",
+    "prior_effect": 0.55,
+    "risk_level": "low"
+  },
+  {
+    "id": "seated_shoulder_rolls",
+    "title": "Trapezius & Neck Release",
+    "one_line_why": "Dissolves isometric muscle contraction caused by intense screen hunching.",
+    "steps": [
+      "Inhale and lift your shoulders up toward your ears",
+      "Roll them backward and down in a wide circular arc",
+      "Perform 8 backward rolls followed by 8 forward rolls",
+      "Gently tilt your head ear-to-shoulder for 10s each side"
+    ],
+    "duration_min": 2,
+    "category": "posture",
+    "target_drivers": ["hours_since_break", "meeting_minutes"],
+    "caution_note": "Never jerk or force neck motions.",
+    "prior_effect": 0.61,
+    "risk_level": "low"
+  },
+  {
+    "id": "twenty_twenty_twenty",
+    "title": "20-20-20 Ciliary Muscle Release",
+    "one_line_why": "Relieves eye accommodation spasms caused by persistent close-range focus.",
+    "steps": [
+      "Direct your gaze away from your screen",
+      "Focus on an object at least 20 feet (6 meters) away",
+      "Hold your gaze there for a full 20 seconds while blinking softly"
+    ],
+    "duration_min": 2,
+    "category": "light",
+    "target_drivers": ["screen_minutes", "focus_self"],
+    "caution_note": "Blink naturally to restore corneal moisture.",
+    "prior_effect": 0.64,
+    "risk_level": "low"
+  },
+  {
+    "id": "micro_nap_rest",
+    "title": "10-Minute Zero-Input Rest",
+    "one_line_why": "Flushes synaptic adenosine accumulation after sleep debt without entering slow-wave sleep.",
+    "steps": [
+      "Set an alarm for exactly 10 minutes",
+      "Close your eyes and lean back comfortably with lights dimmed",
+      "Allow thoughts to drift without engaging your phone or audio"
+    ],
+    "duration_min": 10,
+    "category": "short break",
+    "target_drivers": ["sleep_hours", "energy_self"],
+    "caution_note": "Cap at 10-12 minutes to avoid sleep inertia grogginess.",
+    "prior_effect": 0.74,
+    "risk_level": "low"
+  },
+  {
+    "id": "next_action_downscale",
+    "title": "Atomic Next-Step Downscale",
+    "one_line_why": "Overcomes task paralysis by reducing threshold activation energy.",
+    "steps": [
+      "Look at your blocked project",
+      "Shrink the very next step until it feels embarrassingly easy (e.g., 'type one sentence' or 'open the file')",
+      "Commit to doing just that 60-second slice"
+    ],
+    "duration_min": 2,
+    "category": "planning",
+    "target_drivers": ["focus_self", "stress_self"],
+    "caution_note": "Focus exclusively on the immediate micro-step.",
+    "prior_effect": 0.71,
+    "risk_level": "low"
+  },
+  {
+    "id": "standing_desk_flip",
+    "title": "Stand-Up Position Switch",
+    "one_line_why": "Shifts metabolic rate and activates postural stabilizing motor units.",
+    "steps": [
+      "Elevate your standing desk, or move your laptop to a high counter",
+      "Stand with balanced weight across both feet",
+      "Work in this upright position for your next 20-minute block"
+    ],
+    "duration_min": 1,
+    "category": "movement",
+    "target_drivers": ["movement_minutes", "hours_since_break"],
+    "caution_note": "Shift weight periodically; avoid locking knees.",
+    "prior_effect": 0.59,
+    "risk_level": "low"
+  },
+  {
+    "id": "meeting_buffer_breathing",
+    "title": "Pre-Meeting 3-Breath Buffer",
+    "one_line_why": "Clears mental carryover between back-to-back calendar transitions.",
+    "steps": [
+      "Mute audio and close previous meeting notes",
+      "Take 3 deliberate, slow belly breaths",
+      "Set a single clear intention for what you need to achieve in the incoming session"
+    ],
+    "duration_min": 2,
+    "category": "breathing",
+    "target_drivers": ["back_to_back_count", "meeting_minutes"],
+    "caution_note": "Focus on the transition rather than past agendas.",
+    "prior_effect": 0.66,
+    "risk_level": "low"
+  },
+  {
+    "id": "calm_herbal_sip",
+    "title": "Warm Uncaffeinated Tea Sip",
+    "one_line_why": "Warm sensory input triggers digestive relaxation without adding caffeine jitters.",
+    "steps": [
+      "Brew or pour a mug of warm herbal tea (chamomile, peppermint) or warm water",
+      "Hold the warm mug in both hands for 30 seconds",
+      "Take small, measured warm sips while breathing slowly"
+    ],
+    "duration_min": 4,
+    "category": "hydration",
+    "target_drivers": ["stress_self", "energy_self"],
+    "caution_note": "Ensure beverage is warm, not scalding hot.",
+    "prior_effect": 0.57,
+    "risk_level": "low"
+  },
+  {
+    "id": "fresh_air_ventilation",
+    "title": "Room CO2 Ventilation Flush",
+    "one_line_why": "Reduces indoor CO2 accumulation which directly impairs cognitive decision-making.",
+    "steps": [
+      "Open opposite windows or propping the door open to generate cross-breeze",
+      "Allow fresh outdoor air to circulate through your workspace for 3 minutes",
+      "Take 5 deep breaths of fresh air"
+    ],
+    "duration_min": 3,
+    "category": "short break",
+    "target_drivers": ["energy_self", "hours_since_break"],
+    "caution_note": "Adjust if external air quality is hazardous.",
+    "prior_effect": 0.63,
+    "risk_level": "low"
+  },
+  {
+    "id": "wrist_and_finger_floss",
+    "title": "Carpal & Forearm Tendon Floss",
+    "one_line_why": "Alleviates flexor tendon strain from continuous keyboard and trackpad clutching.",
+    "steps": [
+      "Extend your arm forward with palm facing up; gently draw fingers back with opposite hand for 15s",
+      "Flip palm facing down and gently stretch back of wrist for 15s",
+      "Shake out both wrists gently like flicking water off fingers"
+    ],
+    "duration_min": 2,
+    "category": "posture",
+    "target_drivers": ["screen_minutes", "hours_since_break"],
+    "caution_note": "Gentle tension only, never force pain.",
+    "prior_effect": 0.60,
+    "risk_level": "low"
+  },
+  {
+    "id": "quick_desk_tidy",
+    "title": "60-Second Visual Clutter Purge",
+    "one_line_why": "Reduces sub-conscious visual sensory clutter competing for executive processing.",
+    "steps": [
+      "Remove empty cups, food wrappers, and extraneous papers from immediate eye line",
+      "Place current focus tools in clean alignment",
+      "Enjoy the visual calm before beginning work"
+    ],
+    "duration_min": 2,
+    "category": "planning",
+    "target_drivers": ["context_switches_per_hour", "stress_self"],
+    "caution_note": "Limit to 60 seconds; do not fall into deep cleaning procrastination.",
+    "prior_effect": 0.64,
+    "risk_level": "low"
+  },
+  {
+    "id": "silent_gaze_pause",
+    "title": "Quiet Screen-Free Stillness",
+    "one_line_why": "Lets default mode network quiet down without stimulus consumption.",
+    "steps": [
+      "Turn off monitor or push screen lid down halfway",
+      "Sit comfortably with hands in lap in silence",
+      "Notice your breath for 90 seconds without looking at any device"
+    ],
+    "duration_min": 2,
+    "category": "short break",
+    "target_drivers": ["screen_minutes", "stress_self"],
+    "caution_note": "Relax muscles without slouching.",
+    "prior_effect": 0.62,
+    "risk_level": "low"
+  },
+  {
+    "id": "priority_triage_three",
+    "title": "Top-3 Priority Lockdown",
+    "one_line_why": "Resolves cognitive overload from ambiguous, sprawling to-do lists.",
+    "steps": [
+      "Write down the single task that matters most before day's end",
+      "Write two secondary bonus tasks",
+      "Cross off or hide everything else until tomorrow"
+    ],
+    "duration_min": 3,
+    "category": "planning",
+    "target_drivers": ["focus_self", "back_to_back_count"],
+    "caution_note": "Be ruthless; only 1 primary task.",
+    "prior_effect": 0.67,
+    "risk_level": "low"
+  },
+  {
+    "id": "earplug_quiet_capsule",
+    "title": "Acoustic Silence Pod",
+    "one_line_why": "Instantly drops auditory processing load in noisy dorms or open offices.",
+    "steps": [
+      "Insert foam earplugs or enable active noise cancellation without music",
+      "Adjust fit until ambient murmur is completely suppressed",
+      "Enjoy 15 minutes of uninterrupted silence"
+    ],
+    "duration_min": 2,
+    "category": "noise",
+    "target_drivers": ["context_switches_per_hour", "focus_self"],
+    "caution_note": "Ensure you remain aware of emergency audio signals if in public.",
+    "prior_effect": 0.63,
+    "risk_level": "low"
+  },
+  {
+    "id": "body_scan_grounding",
+    "title": "2-Minute Progressive Muscle Scan",
+    "one_line_why": "Reconnects mind-body sensory loop and identifies unconscious muscle gripping.",
+    "steps": [
+      "Feel your feet making contact with the floor",
+      "Notice and unclench your jaw and release your tongue from the roof of mouth",
+      "Drop your shoulders and loosen your abdominal muscles as you exhale"
+    ],
+    "duration_min": 2,
+    "category": "breathing",
+    "target_drivers": ["stress_self", "focus_self"],
+    "caution_note": "Notice without judgment.",
+    "prior_effect": 0.68,
+    "risk_level": "low"
+  }
+]

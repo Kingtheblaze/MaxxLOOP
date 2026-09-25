@@ -1,0 +1,28 @@
+[project]
+name = "maxxloop-api"
+version = "1.0.0"
+description = "MaxxLoop - Closed-Loop AI Wellness Companion API"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.111.0",
+    "uvicorn[standard]>=0.30.0",
+    "sqlmodel>=0.0.19",
+    "pydantic>=2.7.0",
+    "pydantic-settings>=2.2.0",
+    "numpy>=1.26.0",
+    "pandas>=2.2.0",
+    "scipy>=1.13.0",
+    "pyyaml>=6.0.1",
+    "httpx>=0.27.0",
+    "python-multipart>=0.0.9"
+]
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+asyncio_mode = "auto"

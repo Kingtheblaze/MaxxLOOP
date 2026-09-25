@@ -1,0 +1,20 @@
+# Signal weights for Capacity Score calculation (Sum = 1.0)
+# Higher positive z-score increases capacity; for negative signals (stress, context switches, meetings), 
+# positive raw value leads to negative capacity contribution.
+
+weights:
+  focus_self: 0.30
+  energy_self: 0.25
+  sleep_hours: 0.15
+  context_switches_per_hour: 0.10
+  meeting_minutes: 0.10
+  movement_minutes: 0.05
+  stress_self: 0.05
+
+# Inversion map: if true, higher raw value means LOWER capacity (negative z-score contribution)
+inverted_signals:
+  stress_self: true
+  context_switches_per_hour: true
+  meeting_minutes: true
+  back_to_back_count: true
+  hours_since_break: true

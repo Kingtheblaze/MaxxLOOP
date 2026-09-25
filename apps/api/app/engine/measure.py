@@ -88,7 +88,7 @@ class MeasurementEngine:
         # Check historical outcomes for this specific action to evaluate confidence
         stmt = (
             select(Outcome)
-            .join(Intervention)
+            .join(Intervention, Outcome.intervention_id == Intervention.id)
             .where(Intervention.user_id == intervention.user_id)
             .where(Intervention.action_id == intervention.action_id)
         )

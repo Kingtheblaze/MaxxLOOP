@@ -172,3 +172,4 @@ maxxloop/
 Built with precision for **ASYNC 2026** (Wellness & Lifestyle Track).
 - **Core Thesis**: *Track → Understand → Act → Measure → Improve.*
 - **Version**: `v1.0.0-demo`
+Demo Video Link-https://drive.google.com/file/d/1ReBsruuh4A6XiVvsq5GXrPJoejxbjy8C/view?usp=sharing

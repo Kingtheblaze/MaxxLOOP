@@ -1,13 +1,18 @@
 import pytest
 from fastapi.testclient import TestClient
 from sqlmodel import Session, SQLModel, create_engine
+from sqlalchemy.pool import StaticPool
 from app.main import app
 from app.core.database import get_session
 
 @pytest.fixture(name="client")
 def client_fixture():
     # Use memory database for e2e test isolation
-    engine = create_engine("sqlite:///:memory:")
+    engine = create_engine(
+        "sqlite://",
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
+    )
     SQLModel.metadata.create_all(engine)
 
     def get_test_session():

@@ -26,18 +26,21 @@ export const WhyThisDrawer: React.FC<WhyThisDrawerProps> = ({
   return (
     <div className="w-full mt-3 border border-border/70 rounded-xl overflow-hidden bg-surface/50">
       <button
+        type="button"
         onClick={() => setIsOpen(!isOpen)}
+        aria-expanded={isOpen}
+        aria-controls="why-this-details"
         className="w-full flex items-center justify-between px-3.5 py-2.5 text-xs text-textSecondary hover:text-textPrimary transition"
       >
         <span className="flex items-center gap-1.5 font-medium">
           <Cpu className="w-3.5 h-3.5 text-accent" />
           Why this recommendation? (Math & Drivers)
         </span>
-        {isOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+        {isOpen ? <ChevronUp aria-hidden="true" className="w-4 h-4" /> : <ChevronDown aria-hidden="true" className="w-4 h-4" />}
       </button>
 
       {isOpen && (
-        <div className="px-3.5 pb-3.5 pt-1 border-t border-border/50 text-[11px] font-mono space-y-2.5 text-textSecondary">
+        <div id="why-this-details" className="px-3.5 pb-3.5 pt-1 border-t border-border/50 text-[11px] font-mono space-y-2.5 text-textSecondary">
           {/* Engine Computation Table */}
           <div>
             <span className="text-[10px] text-textMuted uppercase tracking-wider block mb-1">

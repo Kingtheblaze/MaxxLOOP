@@ -13,7 +13,7 @@ module.exports = {
         surface: "#101622",
         surfaceHover: "#161E2E",
         card: "#121A28",
-        border: "#1E293B",
+        border: "#263347",
         borderLight: "#334155",
         accent: {
           DEFAULT: "#00E599",
@@ -32,7 +32,7 @@ module.exports = {
         },
         textPrimary: "#F8FAFC",
         textSecondary: "#94A3B8",
-        textMuted: "#64748B"
+        textMuted: "#93A2B6"
       },
       fontFamily: {
         sans: ["var(--font-inter)", "system-ui", "-apple-system", "sans-serif"],

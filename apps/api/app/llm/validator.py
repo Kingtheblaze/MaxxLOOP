@@ -16,8 +16,8 @@ BANNED_REGEX = re.compile("|".join(BANNED_TERMS), re.IGNORECASE)
 ALL_POSSIBLE_DRIVERS = {
     "sleep": ["sleep_hours", "sleep"],
     "meeting": ["meeting_minutes", "back_to_back_count"],
-    "tab": ["context_switches_per_hour"],
-    "switch": ["context_switches_per_hour"],
+    r"tab(?:s|bing)?": ["context_switches_per_hour"],
+    r"switch(?:es|ed|ing)?": ["context_switches_per_hour"],
     "stress": ["stress_self"],
     "break": ["hours_since_break"],
     "screen": ["screen_minutes"],

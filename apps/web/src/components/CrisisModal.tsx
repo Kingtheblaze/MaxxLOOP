@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { Phone, Heart, ExternalLink, ShieldCheck } from "lucide-react";
 import { CrisisInfo } from "@/types";
 
@@ -15,6 +15,37 @@ export const CrisisModal: React.FC<CrisisModalProps> = ({
   onClose,
   crisisData,
 }) => {
+  const modalRef = useRef<HTMLDivElement>(null);
+  const closeRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const previousFocus = document.activeElement as HTMLElement | null;
+    closeRef.current?.focus();
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        onClose();
+      }
+      if (event.key !== "Tab" || !modalRef.current) return;
+      const focusable = Array.from(modalRef.current.querySelectorAll<HTMLElement>('a[href], button:not([disabled])'));
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last?.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first?.focus();
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      previousFocus?.focus();
+    };
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   const helpline = crisisData || {
@@ -31,14 +62,14 @@ export const CrisisModal: React.FC<CrisisModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-      <div className="w-full max-w-sm bg-surface border border-drop/40 rounded-2xl p-6 shadow-2xl space-y-4">
+      <div ref={modalRef} role="alertdialog" aria-modal="true" aria-labelledby="crisis-title" aria-describedby="crisis-description" className="w-full max-w-sm bg-surface border border-drop/40 rounded-2xl p-6 shadow-2xl space-y-4">
         <div className="w-12 h-12 rounded-full bg-drop/10 border border-drop/30 flex items-center justify-center mx-auto text-drop">
           <Heart className="w-6 h-6 animate-pulse" />
         </div>
 
         <div className="text-center space-y-2">
-          <h3 className="text-lg font-semibold text-textPrimary">You are not alone</h3>
-          <p className="text-xs text-textSecondary leading-relaxed">
+          <h3 id="crisis-title" className="text-lg font-semibold text-textPrimary">You are not alone</h3>
+          <p id="crisis-description" className="text-sm text-textSecondary leading-relaxed">
             {helpline.support_message}
           </p>
         </div>
@@ -77,14 +108,15 @@ export const CrisisModal: React.FC<CrisisModalProps> = ({
             href={helpline.international_resource}
             target="_blank"
             rel="noopener noreferrer"
-            className="w-full flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg bg-surfaceHover border border-border text-xs text-textSecondary hover:text-textPrimary transition"
+            className="app-button-secondary w-full"
           >
             Find international helplines <ExternalLink className="w-3.5 h-3.5" />
           </a>
 
           <button
+            ref={closeRef}
             onClick={onClose}
-            className="w-full py-2.5 rounded-xl bg-surface border border-border text-xs text-textMuted hover:text-textSecondary transition"
+            className="app-button-secondary w-full"
           >
             Return to app
           </button>

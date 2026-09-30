@@ -16,17 +16,19 @@ interface SparklineChartProps {
   data: SparklinePoint[];
   baseline?: number;
   height?: number;
+  emptyMessage?: string;
 }
 
 export const SparklineChart: React.FC<SparklineChartProps> = ({
   data,
   baseline = 50,
   height = 70,
+  emptyMessage = "No capacity history is available yet.",
 }) => {
   if (!data || data.length === 0) {
     return (
-      <div className="h-16 flex items-center justify-center text-xs text-textMuted font-mono">
-        Collecting baseline signals...
+      <div role="status" className="h-16 flex items-center justify-center text-xs text-textMuted font-mono">
+        {emptyMessage}
       </div>
     );
   }
@@ -42,12 +44,12 @@ export const SparklineChart: React.FC<SparklineChartProps> = ({
   }));
 
   return (
-    <div className="w-full flex flex-col">
+    <div role="img" aria-label={`Capacity trajectory relative to baseline. ${formattedData.map((point) => `${point.displayTime}: ${Math.round(point.score)}`).join("; ")}`} className="w-full flex flex-col">
       <div className="flex items-center justify-between text-[11px] text-textMuted font-mono mb-1">
         <span>14-DAY CAPACITY TRAJECTORY</span>
         <span className="flex items-center gap-1.5">
           <span className="w-2 h-[2px] bg-slate-500 inline-block" />
-          Base 50
+          Base {baseline}
         </span>
       </div>
       <div style={{ width: "100%", height }}>
@@ -59,7 +61,7 @@ export const SparklineChart: React.FC<SparklineChartProps> = ({
                 <stop offset="95%" stopColor="#00E599" stopOpacity={0.0} />
               </linearGradient>
             </defs>
-            <YAxis domain={[20, 80]} hide />
+            <YAxis domain={[0, 100]} hide />
             <XAxis dataKey="index" hide />
             <Tooltip
               content={({ active, payload }) => {

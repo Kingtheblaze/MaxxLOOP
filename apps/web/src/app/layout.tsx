@@ -1,5 +1,5 @@
 import "./globals.css";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Navbar } from "@/components/Navbar";
 
 export const metadata: Metadata = {
@@ -7,13 +7,12 @@ export const metadata: Metadata = {
   description:
     "Detect capacity drops, explain root drivers in plain language, take exactly ONE high-leverage micro-action, and measure true counterfactual net recovery.",
   manifest: "/manifest.json",
+};
+
+export const viewport: Viewport = {
   themeColor: "#090D14",
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    maximumScale: 1,
-    userScalable: false,
-  },
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default function RootLayout({
@@ -23,11 +22,19 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="dark">
-      <body className="bg-background text-textPrimary min-h-screen flex flex-col items-center justify-start antialiased selection:bg-accent/30 selection:text-accent">
-        {/* Mobile Viewport Container: 390px centered design frame */}
-        <div className="w-full max-w-[420px] min-h-screen bg-background border-x border-border flex flex-col relative pb-20 shadow-2xl">
-          {children}
+      <body className="min-h-screen bg-background text-textPrimary antialiased selection:bg-accent/30 selection:text-accent">
+        <a href="#main-content" className="sr-only z-50 rounded-lg bg-surface px-4 py-3 text-textPrimary focus:not-sr-only focus:fixed focus:left-4 focus:top-4">
+          Skip to main content
+        </a>
+        <div className="mx-auto min-h-screen w-full max-w-[420px] border-x border-border bg-background pb-[calc(5rem+env(safe-area-inset-bottom))] md:max-w-6xl md:border-x-0 md:px-8 md:pb-10">
           <Navbar />
+          {children}
+          <footer className="hidden border-t border-border/70 px-8 py-5 text-xs text-textMuted md:block">
+            <div className="flex items-center justify-between gap-4">
+              <span>MaxxLoop · Focus and recovery, measured over time.</span>
+              <a href="/privacy" className="rounded-sm hover:text-textPrimary">Privacy and data controls</a>
+            </div>
+          </footer>
         </div>
       </body>
     </html>

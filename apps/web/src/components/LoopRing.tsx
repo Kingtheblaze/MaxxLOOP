@@ -7,7 +7,6 @@ import { Activity, Compass, Zap, Gauge, TrendingUp } from "lucide-react";
 interface LoopRingProps {
   currentStage: LoopStage;
   className?: string;
-  onStageClick?: (stage: LoopStage) => void;
 }
 
 const STAGES: { id: LoopStage; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
@@ -18,34 +17,36 @@ const STAGES: { id: LoopStage; label: string; icon: React.ComponentType<{ classN
   { id: "improve", label: "Improve", icon: TrendingUp },
 ];
 
-export const LoopRing: React.FC<LoopRingProps> = ({ currentStage, className = "", onStageClick }) => {
+export const LoopRing: React.FC<LoopRingProps> = ({ currentStage, className = "" }) => {
   const currentIndex = STAGES.findIndex((s) => s.id === currentStage);
 
   return (
     <div className={`flex flex-col items-center justify-center p-3 ${className}`}>
       {/* 5-Step Segmented Bar / Circular Progress Representation */}
-      <div className="w-full flex items-center justify-between relative px-2">
+      <div className="relative w-full px-2">
         {/* Background track line */}
-        <div className="absolute left-6 right-6 top-1/2 -translate-y-1/2 h-[2px] bg-border z-0" />
+        <div aria-hidden="true" className="absolute left-6 right-6 top-[18px] h-[2px] bg-border z-0" />
 
         {/* Progress highlight line */}
         <div
-          className="absolute left-6 top-1/2 -translate-y-1/2 h-[2px] bg-accent transition-all duration-500 z-0"
+          aria-hidden="true"
+          className="absolute left-6 top-[18px] h-[2px] bg-accent transition-all duration-500 z-0"
           style={{
             width: `${(currentIndex / (STAGES.length - 1)) * 88}%`,
           }}
         />
 
+        <ol aria-label="Closed-loop stages" className="relative z-10 flex w-full items-center justify-between">
         {STAGES.map((s, idx) => {
           const isActive = s.id === currentStage;
           const isPassed = idx < currentIndex;
           const Icon = s.icon;
 
           return (
-            <button
+            <li
               key={s.id}
-              onClick={() => onStageClick && onStageClick(s.id)}
-              className="group relative z-10 flex flex-col items-center focus:outline-none"
+              aria-current={isActive ? "step" : undefined}
+              className="flex flex-col items-center"
             >
               <div
                 className={`w-9 h-9 rounded-full flex items-center justify-center transition-all duration-300 ${
@@ -69,9 +70,10 @@ export const LoopRing: React.FC<LoopRingProps> = ({ currentStage, className = ""
               >
                 {s.label}
               </span>
-            </button>
+            </li>
           );
         })}
+        </ol>
       </div>
     </div>
   );

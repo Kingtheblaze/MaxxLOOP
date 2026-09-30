@@ -16,17 +16,16 @@ import { ActionTimer } from "@/components/ActionTimer";
 import { WhyThisDrawer } from "@/components/WhyThisDrawer";
 import { CrisisModal } from "@/components/CrisisModal";
 import { DemoBar } from "@/components/DemoBar";
+import { PageHeader } from "@/components/PageHeader";
+import { StatusMessage } from "@/components/StatusMessage";
+import Link from "next/link";
 import {
   Check,
   ChevronRight,
   ThumbsUp,
   ThumbsDown,
-  RotateCcw,
-  Sparkles,
-  ShieldAlert,
   Send,
   Sliders,
-  CheckCircle2,
 } from "lucide-react";
 
 export default function NowPage() {
@@ -42,6 +41,7 @@ export default function NowPage() {
   const [checkinNote, setCheckinNote] = useState("");
   const [checkinSubmitting, setCheckinSubmitting] = useState(false);
   const [showCheckinDrawer, setShowCheckinDrawer] = useState(false);
+  const [checkinSuccess, setCheckinSuccess] = useState(false);
 
   // Post-window measure form state
   const [postFocus, setPostFocus] = useState(4.0);
@@ -55,6 +55,8 @@ export default function NowPage() {
 
   // Feedback state
   const [feedbackSent, setFeedbackSent] = useState<boolean | null>(null);
+  const [feedbackSubmitting, setFeedbackSubmitting] = useState(false);
+  const [feedbackError, setFeedbackError] = useState<string | null>(null);
 
   const loadData = useCallback(async () => {
     try {
@@ -65,9 +67,9 @@ export default function NowPage() {
       ]);
       setCapacity(capRes);
       setActiveLoop(loopRes);
+      setFeedbackSent(loopRes.latest_outcome?.user_helpful ?? null);
     } catch (err: any) {
-      console.error(err);
-      setError("Unable to connect to MaxxLoop Engine. Ensure API is running on :8000.");
+      setError("We couldn't load your capacity data. Check the API connection and retry.");
     } finally {
       setLoading(false);
     }
@@ -98,6 +100,7 @@ export default function NowPage() {
 
       setCheckinNote("");
       setShowCheckinDrawer(false);
+      setCheckinSuccess(true);
       await loadData();
     } catch (err: any) {
       setError(err.message || "Failed to submit check-in");
@@ -113,7 +116,7 @@ export default function NowPage() {
       await api.startLoopAction(activeLoop.intervention_id);
       await loadData();
     } catch (e: any) {
-      setError(e.message);
+      setError("The action could not be started. Please retry.");
     }
   };
 
@@ -124,7 +127,7 @@ export default function NowPage() {
       await api.skipLoopAction(activeLoop.intervention_id, "User skipped");
       await loadData();
     } catch (e: any) {
-      setError(e.message);
+      setError("The action could not be skipped. Please retry.");
     }
   };
 
@@ -141,7 +144,7 @@ export default function NowPage() {
       });
       await loadData();
     } catch (e: any) {
-      setError(e.message);
+      setError("The outcome could not be recorded. Please retry.");
     } finally {
       setMeasureSubmitting(false);
     }
@@ -150,11 +153,15 @@ export default function NowPage() {
   // Submit feedback
   const handleFeedback = async (helpful: boolean) => {
     if (!activeLoop?.intervention_id) return;
+    setFeedbackSubmitting(true);
+    setFeedbackError(null);
     try {
       await api.submitFeedback(activeLoop.intervention_id, helpful);
       setFeedbackSent(helpful);
     } catch (e: any) {
-      console.error(e);
+      setFeedbackError(e.message || "Feedback could not be saved. Please retry.");
+    } finally {
+      setFeedbackSubmitting(false);
     }
   };
 
@@ -163,32 +170,47 @@ export default function NowPage() {
     : "track";
 
   return (
-    <main className="flex flex-col flex-1 pb-10">
+    <main id="main-content" tabIndex={-1} className="flex flex-col flex-1 pb-10">
       {/* Top Demo Bar */}
-      <DemoBar onRefresh={loadData} />
+      <DemoBar onRefresh={loadData} compact />
+
+      <div className="px-5 pb-2 pt-7 md:px-8 md:pb-4 md:pt-10">
+        <PageHeader
+          eyebrow="Your capacity workspace"
+          title="See what changes your capacity."
+          description="MaxxLoop tracks focus and energy signals, recommends one practical action, then measures what changed. Your check-ins keep the next recommendation personal."
+          action={<div className="mt-2 flex flex-wrap gap-2">
+            {activeLoop?.has_active_loop ? (
+              <a href="#active-loop" className="app-button-primary">Continue your active loop</a>
+            ) : (
+              <button onClick={() => { setCheckinSuccess(false); setShowCheckinDrawer(true); }} className="app-button-primary">Start a 10-second check-in</button>
+            )}
+            <Link href="/demo" className="app-button-secondary">See how the loop works</Link>
+          </div>}
+        />
+      </div>
 
       {/* Signature 5-Stage Loop Ring */}
       <div className="pt-2 pb-1 border-b border-border/40">
         <LoopRing currentStage={currentStage} />
       </div>
 
-      <div className="p-4 space-y-4">
+      <div className={`space-y-4 p-4 md:p-8 ${activeLoop?.has_active_loop ? "md:grid md:grid-cols-[minmax(0,1.1fr)_minmax(320px,.9fr)] md:items-start md:gap-6 md:space-y-0" : "md:mx-auto md:w-full md:max-w-4xl"}`}>
         {/* Error Notification */}
         {error && (
-          <div className="p-3 rounded-xl bg-drop/10 border border-drop/30 text-xs text-drop flex items-center justify-between">
-            <span>{error}</span>
+              <StatusMessage kind="error" className="text-sm" action={
             <button
               onClick={loadData}
-              className="underline font-semibold hover:text-white"
+                  className="min-h-8 shrink-0 rounded-lg border border-drop/30 px-3 font-semibold hover:bg-drop/10"
             >
               Retry
             </button>
-          </div>
+              }>{error}</StatusMessage>
         )}
 
         {/* HERO LOOP CARD (When Capacity Drop or Intervention is active) */}
         {activeLoop?.has_active_loop && activeLoop.action && (
-          <div className="rounded-2xl glass-panel-accent p-4 border border-accent/30 shadow-card space-y-3.5 relative overflow-hidden">
+          <div id="active-loop" className="app-panel space-y-3.5 border-accent/35 bg-surface p-4 md:p-6">
             {/* Stage Indicator Pill */}
             <div className="flex items-center justify-between">
               <span className="text-[10px] font-mono uppercase tracking-widest text-accent font-semibold flex items-center gap-1.5">
@@ -271,7 +293,7 @@ export default function NowPage() {
                 <div className="flex items-center gap-2 pt-2">
                   <button
                     onClick={handleStartAction}
-                    className="flex-1 py-2.5 px-4 rounded-xl bg-accent text-background font-semibold text-xs hover:bg-accent-hover transition flex items-center justify-center gap-1.5 shadow-glow"
+                    className="app-button-primary flex-1"
                   >
                     Start {activeLoop.action.duration_min}m Action
                   </button>
@@ -354,6 +376,7 @@ export default function NowPage() {
                     </div>
                     <input
                       type="range"
+                      aria-label="Post focus rating"
                       min="1"
                       max="5"
                       step="0.5"
@@ -370,6 +393,7 @@ export default function NowPage() {
                     </div>
                     <input
                       type="range"
+                      aria-label="Post energy rating"
                       min="1"
                       max="5"
                       step="0.5"
@@ -386,6 +410,7 @@ export default function NowPage() {
                     </div>
                     <input
                       type="range"
+                      aria-label="Post stress rating"
                       min="1"
                       max="5"
                       step="0.5"
@@ -399,7 +424,7 @@ export default function NowPage() {
                 <button
                   type="submit"
                   disabled={measureSubmitting}
-                  className="w-full py-2.5 rounded-xl bg-accent text-background font-semibold text-xs hover:bg-accent-hover transition flex items-center justify-center gap-1.5 shadow-glow"
+                  className="app-button-primary w-full"
                 >
                   {measureSubmitting ? "Computing Net Effect..." : "Measure & Record Outcome"}
                 </button>
@@ -461,6 +486,8 @@ export default function NowPage() {
                   <div className="flex items-center justify-center gap-3">
                     <button
                       onClick={() => handleFeedback(true)}
+                      disabled={feedbackSubmitting}
+                      aria-pressed={feedbackSent === true}
                       className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border text-xs transition ${
                         feedbackSent === true
                           ? "bg-accent/20 border-accent text-accent font-semibold"
@@ -471,6 +498,8 @@ export default function NowPage() {
                     </button>
                     <button
                       onClick={() => handleFeedback(false)}
+                      disabled={feedbackSubmitting}
+                      aria-pressed={feedbackSent === false}
                       className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border text-xs transition ${
                         feedbackSent === false
                           ? "bg-drop/20 border-drop text-drop font-semibold"
@@ -480,6 +509,9 @@ export default function NowPage() {
                       <ThumbsDown className="w-3.5 h-3.5" /> Not helpful
                     </button>
                   </div>
+                  {feedbackSubmitting && <p role="status" className="mt-2 text-center text-xs text-textSecondary">Saving your feedback…</p>}
+                  {feedbackSent !== null && <StatusMessage kind="success" className="mt-3">Feedback recorded. This helps shape future recommendations.</StatusMessage>}
+                  {feedbackError && <StatusMessage kind="error" className="mt-3">{feedbackError}</StatusMessage>}
                 </div>
 
                 <button
@@ -494,19 +526,32 @@ export default function NowPage() {
         )}
 
         {/* DEFAULT VIEW: CAPACITY GAUGE & 10-SEC CHECKIN */}
-        <div className="rounded-2xl glass-panel p-4 border border-border shadow-card space-y-4">
-          <CapacityGauge
-            score={capacity?.score || 50}
-            baseline={capacity?.baseline || 50}
-            delta={capacity?.delta || 0}
-            isDrop={capacity?.is_drop || false}
-            statusLabel={capacity?.status_label || "Balanced Operational Capacity"}
-          />
+        <section id="home-checkin" aria-labelledby="capacity-heading" className="app-panel space-y-4 p-4 md:p-6">
+          <h2 id="capacity-heading" className="sr-only">Current capacity and check-in</h2>
+          {loading && !capacity ? (
+            <p role="status" aria-live="polite" className="py-12 text-center text-sm text-textSecondary">
+              Loading current capacity…
+            </p>
+          ) : capacity ? (
+            <CapacityGauge
+              score={capacity.score}
+              baseline={capacity.baseline}
+              delta={capacity.delta}
+              isDrop={capacity.is_drop}
+              statusLabel={capacity.status_label}
+            />
+          ) : (
+            <p role="status" className="py-8 text-center text-sm text-textSecondary">
+              Capacity data is unavailable. Use Retry above to reconnect.
+            </p>
+          )}
 
           {/* 14-Day Sparkline */}
           <div className="pt-2 border-t border-border/50">
-            <SparklineChart data={capacity?.sparkline || []} baseline={50} />
+            <SparklineChart data={capacity?.sparkline || []} baseline={capacity?.baseline ?? 50} emptyMessage={error ? "Capacity history is unavailable. Retry to reconnect." : loading ? "Loading capacity history…" : "No capacity history available yet."} />
           </div>
+
+          {checkinSuccess && <StatusMessage kind="success">Check-in saved. Your capacity view is up to date.</StatusMessage>}
 
           {/* Quick Check-in Drawer Toggle */}
           <div className="pt-1">
@@ -544,6 +589,7 @@ export default function NowPage() {
                     </div>
                     <input
                       type="range"
+                      aria-label="Focus level"
                       min="1"
                       max="5"
                       step="0.5"
@@ -560,6 +606,7 @@ export default function NowPage() {
                     </div>
                     <input
                       type="range"
+                      aria-label="Energy level"
                       min="1"
                       max="5"
                       step="0.5"
@@ -576,6 +623,7 @@ export default function NowPage() {
                     </div>
                     <input
                       type="range"
+                      aria-label="Stress level"
                       min="1"
                       max="5"
                       step="0.5"
@@ -590,10 +638,11 @@ export default function NowPage() {
                 <div>
                   <input
                     type="text"
+                    aria-label="Optional check-in note"
                     value={checkinNote}
                     onChange={(e) => setCheckinNote(e.target.value)}
                     placeholder="Optional note (e.g. 3 back-to-back classes)..."
-                    className="w-full px-3 py-2 rounded-lg bg-surface border border-border text-xs text-textPrimary placeholder:text-textMuted focus:outline-none focus:border-accent"
+                    className="w-full rounded-lg border border-border bg-surface px-3 py-2.5 text-sm text-textPrimary placeholder:text-textMuted focus:border-accent"
                   />
                   <p className="text-[10px] text-textMuted mt-1">
                     Crisis words automatically trigger Tele-MANAS (14416) safety card.
@@ -603,7 +652,8 @@ export default function NowPage() {
                 <button
                   type="submit"
                   disabled={checkinSubmitting}
-                  className="w-full py-2.5 rounded-xl bg-accent text-background font-semibold text-xs hover:bg-accent-hover transition shadow-glow flex items-center justify-center gap-1.5"
+                  aria-busy={checkinSubmitting}
+                  className="app-button-primary w-full"
                 >
                   <Send className="w-3.5 h-3.5" />
                   {checkinSubmitting ? "Evaluating Engine..." : "Submit Check-in"}
@@ -611,11 +661,11 @@ export default function NowPage() {
               </form>
             )}
           </div>
-        </div>
+        </section>
 
         {/* Safety Note */}
-        <div className="text-center pt-2 text-[10px] text-textMuted font-mono">
-          Wellness support companion, not medical advice. MaxxLoop ASYNC 2026.
+        <div className="pt-2 text-center text-xs text-textMuted">
+          MaxxLoop supports focus and recovery habits. It is not a medical service.
         </div>
       </div>
 

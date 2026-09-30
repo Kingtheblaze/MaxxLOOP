@@ -3,6 +3,7 @@ from sqlmodel import Session, select, delete
 from datetime import datetime, timedelta, timezone
 import random
 import json
+from typing import Optional
 
 from app.core.database import get_session
 from app.models.models import User, Signal, CapacitySnapshot, Intervention, Outcome, ActionPrior

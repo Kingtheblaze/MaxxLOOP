@@ -25,9 +25,17 @@ export const CapacityGauge: React.FC<CapacityGaugeProps> = ({
 
   return (
     <div className="flex flex-col items-center justify-center py-4">
-      <div className="relative w-44 h-44 flex items-center justify-center">
+      <div
+        role="meter"
+        aria-label="Current capacity"
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={Math.round(score)}
+        aria-valuetext={`${Math.round(score)} capacity, ${delta} versus baseline`}
+        className="relative flex h-44 w-44 items-center justify-center"
+      >
         {/* SVG Circular Gauge */}
-        <svg className="w-full h-full -rotate-90 transform" viewBox="0 0 160 160">
+        <svg aria-hidden="true" className="w-full h-full -rotate-90 transform" viewBox="0 0 160 160">
           {/* Background Ring */}
           <circle
             cx="80"

@@ -1,11 +1,13 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { api } from "@/lib/api";
 import { LLMPayloadInspection } from "@/types";
 import { DemoBar } from "@/components/DemoBar";
+import { PageHeader } from "@/components/PageHeader";
+import { StatusMessage } from "@/components/StatusMessage";
+import { clearConsentPreferences, readConsentPreferences, writeConsentPreferences } from "@/lib/consent-storage";
 import {
-  ShieldCheck,
   Eye,
   Download,
   Trash2,
@@ -13,7 +15,6 @@ import {
   Calendar,
   Monitor,
   Cpu,
-  CheckCircle2,
 } from "lucide-react";
 
 export default function PrivacyPage() {
@@ -21,18 +22,45 @@ export default function PrivacyPage() {
   const [exportLoading, setExportLoading] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState(false);
   const [deleteSuccess, setDeleteSuccess] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [exportSuccess, setExportSuccess] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [payloadLoading, setPayloadLoading] = useState(true);
+  const [payloadError, setPayloadError] = useState(false);
+  const [consentSaving, setConsentSaving] = useState(false);
+  const [consentStatus, setConsentStatus] = useState<string | null>(null);
 
   // Consent flags
   const [consentCalendar, setConsentCalendar] = useState(true);
   const [consentBrowser, setConsentBrowser] = useState(true);
   const [consentLLM, setConsentLLM] = useState(false);
 
-  useEffect(() => {
-    api.getLLMPayload().then(setLlmPayload).catch(console.error);
+  const loadPayload = useCallback(async () => {
+    setPayloadLoading(true);
+    setPayloadError(false);
+    try {
+      setLlmPayload(await api.getLLMPayload());
+    } catch {
+      setPayloadError(true);
+    } finally {
+      setPayloadLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    const saved = readConsentPreferences();
+    if (saved) {
+      setConsentCalendar(saved.consent_calendar);
+      setConsentBrowser(saved.consent_browser_signals);
+      setConsentLLM(saved.consent_llm_sharing);
+    }
+    void loadPayload();
+  }, [loadPayload]);
 
   const handleExport = async () => {
     setExportLoading(true);
+    setActionError(null);
+    setExportSuccess(false);
     try {
       const data = await api.exportData();
       const blob = new Blob([JSON.stringify(data, null, 2)], {
@@ -43,21 +71,27 @@ export default function PrivacyPage() {
       a.href = url;
       a.download = `maxxloop-export-${new Date().toISOString().split("T")[0]}.json`;
       a.click();
-      URL.revokeObjectURL(url);
+      window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+      setExportSuccess(true);
     } catch (e) {
-      console.error("Export error", e);
+      setActionError("The telemetry export could not be prepared. Please retry.");
     } finally {
       setExportLoading(false);
     }
   };
 
   const handleDeleteAll = async () => {
+    setDeleteLoading(true);
+    setActionError(null);
     try {
       await api.deleteData();
+      clearConsentPreferences();
       setDeleteSuccess(true);
       setDeleteConfirm(false);
     } catch (e) {
-      console.error("Delete error", e);
+      setActionError("Data could not be deleted. Please retry.");
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
@@ -65,6 +99,10 @@ export default function PrivacyPage() {
     field: "calendar" | "browser" | "llm",
     newVal: boolean
   ) => {
+    const previous = { calendar: consentCalendar, browser: consentBrowser, llm: consentLLM };
+    setConsentSaving(true);
+    setConsentStatus(null);
+    setActionError(null);
     let cal = consentCalendar;
     let br = consentBrowser;
     let ll = consentLLM;
@@ -81,45 +119,43 @@ export default function PrivacyPage() {
     }
 
     try {
-      await api.updateConsent({
+      const preferences = {
         consent_calendar: cal,
         consent_browser_signals: br,
         consent_llm_sharing: ll,
         llm_provider: "template",
-      });
+      };
+      await api.updateConsent(preferences);
+      writeConsentPreferences(preferences);
+      setConsentStatus("Privacy preferences saved.");
     } catch (e) {
-      console.error(e);
+      setConsentCalendar(previous.calendar);
+      setConsentBrowser(previous.browser);
+      setConsentLLM(previous.llm);
+      setActionError("Your consent preference could not be saved. Please retry.");
+    } finally {
+      setConsentSaving(false);
     }
   };
 
   return (
-    <main className="flex flex-col flex-1 pb-10">
-      <DemoBar />
+    <main id="main-content" tabIndex={-1} className="mx-auto flex w-full max-w-5xl flex-1 flex-col pb-10">
+      <DemoBar compact />
 
-      <div className="p-4 space-y-4">
-        {/* Header */}
-        <div>
-          <span className="text-[10px] font-mono uppercase tracking-widest text-accent font-semibold flex items-center gap-1.5">
-            <Lock className="w-3.5 h-3.5 text-accent" />
-            Zero-Knowledge Local First
-          </span>
-          <h1 className="text-xl font-bold text-textPrimary tracking-tight">
-            Data & Privacy
-          </h1>
-          <p className="text-xs text-textSecondary mt-0.5">
-            You own your telemetry. Stored locally in SQLite. Never sold.
-          </p>
-        </div>
+      <div className="mx-auto w-full space-y-5 p-5 md:p-8">
+        <PageHeader eyebrow={<span className="flex items-center gap-2"><Lock aria-hidden="true" className="h-3.5 w-3.5" /> Your data, your controls</span>} title="Privacy and data" description="Review the signals MaxxLoop can use, inspect sanitized explanation payloads, and export or erase your telemetry." />
 
+        {actionError && <StatusMessage kind="error">{actionError}</StatusMessage>}
+        {consentStatus && <StatusMessage kind="success">{consentStatus}</StatusMessage>}
+
+        <div className="grid grid-cols-1 items-start gap-5 lg:grid-cols-2 lg:gap-6">
         {/* Connected Sources & Consent Toggles */}
-        <div className="rounded-2xl glass-panel p-4 border border-border space-y-3">
-          <h2 className="text-xs font-semibold text-textPrimary uppercase tracking-wider font-mono">
-            Connected Signal Sources
-          </h2>
+        <section className="app-panel space-y-4 p-5 md:p-6">
+          <div><h2 className="app-section-title">Signal permissions</h2><p className="mt-1 text-sm text-textSecondary">Change which information may inform your capacity estimates.</p></div>
 
           <div className="space-y-2.5">
             {/* Calendar */}
-            <div className="flex items-center justify-between p-3 rounded-xl bg-surfaceHover/70 border border-border/50">
+            <label className="flex min-h-16 cursor-pointer items-center justify-between gap-4 rounded-xl border border-border/50 bg-surfaceHover/70 p-4">
               <div className="flex items-center gap-2.5">
                 <Calendar className="w-4 h-4 text-purple-400" />
                 <div>
@@ -134,13 +170,20 @@ export default function PrivacyPage() {
               <input
                 type="checkbox"
                 checked={consentCalendar}
+                disabled={consentSaving}
                 onChange={(e) => handleToggleConsent("calendar", e.target.checked)}
-                className="w-4 h-4 accent-accent cursor-pointer"
+                aria-label="Allow calendar duration and meeting-count signals"
+                className="h-5 w-5 shrink-0 accent-accent"
               />
-            </div>
+            </label>
+
+            <label className="flex cursor-pointer items-center justify-between gap-3 rounded-xl border border-border/50 bg-surfaceHover/70 p-3">
+              <span className="flex items-start gap-2.5"><Cpu aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-calmBlue" /><span><span className="block text-sm font-medium text-textPrimary">Sanitized explanation summaries</span><span className="mt-1 block text-xs leading-relaxed text-textSecondary">Off by default. Raw notes and personal text are excluded.</span></span></span>
+              <input type="checkbox" checked={consentLLM} disabled={consentSaving} onChange={(e) => handleToggleConsent("llm", e.target.checked)} aria-label="Allow sanitized summaries to be shared with an explanation provider" className="h-5 w-5 shrink-0 accent-accent" />
+            </label>
 
             {/* Browser Visibility */}
-            <div className="flex items-center justify-between p-3 rounded-xl bg-surfaceHover/70 border border-border/50">
+            <label className="flex min-h-16 cursor-pointer items-center justify-between gap-4 rounded-xl border border-border/50 bg-surfaceHover/70 p-4">
               <div className="flex items-center gap-2.5">
                 <Monitor className="w-4 h-4 text-amber-400" />
                 <div>
@@ -155,19 +198,21 @@ export default function PrivacyPage() {
               <input
                 type="checkbox"
                 checked={consentBrowser}
+                disabled={consentSaving}
                 onChange={(e) => handleToggleConsent("browser", e.target.checked)}
-                className="w-4 h-4 accent-accent cursor-pointer"
+                aria-label="Allow browser tab-switch signals"
+                className="h-5 w-5 shrink-0 accent-accent"
               />
-            </div>
+            </label>
           </div>
-        </div>
+        </section>
 
         {/* Live LLM Payload Transparency Viewer */}
-        <div className="rounded-2xl glass-panel p-4 border border-border space-y-3">
+        <section className="app-panel space-y-4 p-5 md:p-6">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-xs font-semibold text-textPrimary">
-                Exact Sanitized Payload Sent to LLM
+              <h2 className="text-sm font-semibold text-textPrimary">
+                Sanitized explanation payload
               </h2>
               <p className="text-[10px] text-textMuted font-mono">
                 Provider: {llmPayload?.provider_used || "template"}
@@ -176,11 +221,13 @@ export default function PrivacyPage() {
             <Eye className="w-4 h-4 text-accent" />
           </div>
 
-          <div className="bg-surfaceHover/90 p-3 rounded-xl border border-border/60 font-mono text-[11px] text-textSecondary overflow-x-auto max-h-48">
-            <pre className="text-accent">
-              {JSON.stringify(llmPayload?.last_payload_sent || { status: "No LLM query executed yet" }, null, 2)}
+          <details className="overflow-hidden rounded-xl border border-border/60 bg-surfaceHover/90">
+            <summary className="flex min-h-11 cursor-pointer items-center px-4 py-3 text-sm font-medium text-textSecondary hover:text-textPrimary">View last sanitized payload</summary>
+            <pre className="max-h-64 overflow-auto whitespace-pre-wrap break-words border-t border-border/60 p-4 font-mono text-xs text-accent" aria-live={payloadLoading ? "polite" : undefined}>
+              {payloadLoading ? "Loading payload details…" : JSON.stringify(llmPayload?.last_payload_sent || { status: "No LLM query executed yet" }, null, 2)}
             </pre>
-          </div>
+          </details>
+          {payloadError && <StatusMessage kind="error" className="items-center">Payload details could not be loaded.<button type="button" onClick={loadPayload} className="app-button-secondary min-h-9 shrink-0 border-drop/40 px-3 text-xs text-drop">Retry</button></StatusMessage>}
 
           {/* Excluded Fields Guarantee */}
           <div className="bg-surfaceHover/50 p-2.5 rounded-lg border border-border/30 text-[10px] text-textMuted space-y-1">
@@ -194,59 +241,44 @@ export default function PrivacyPage() {
               <li>Device IP address & persistent hardware IDs</li>
             </ul>
           </div>
-        </div>
+        </section>
 
         {/* Export & Delete Actions */}
-        <div className="rounded-2xl glass-panel p-4 border border-border space-y-3">
-          <h2 className="text-xs font-semibold text-textPrimary uppercase tracking-wider font-mono">
+        <section className="app-panel space-y-4 p-5 md:col-span-2 md:p-6">
+          <h2 className="app-section-title">
             Data Portability & Right to Erasure
           </h2>
 
-          <div className="space-y-2">
+          <div className="space-y-3">
             <button
               onClick={handleExport}
               disabled={exportLoading}
-              className="w-full py-2.5 px-4 rounded-xl bg-surfaceHover border border-border hover:border-accent/40 text-xs text-textPrimary font-semibold transition flex items-center justify-center gap-2"
+              className="flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-border bg-surfaceHover px-4 py-3 text-sm font-semibold text-textPrimary transition hover:border-accent/40"
             >
               <Download className="w-4 h-4 text-accent" />
               {exportLoading ? "Preparing JSON Export..." : "Export All Telemetry as JSON"}
             </button>
 
-            {!deleteConfirm ? (
+            {exportSuccess && <StatusMessage kind="success">Your telemetry export is ready.</StatusMessage>}
+
+            {deleteConfirm && <StatusMessage kind="error" className="items-center"><span><strong>Permanent deletion.</strong> This erases all stored telemetry and cannot be undone.</span></StatusMessage>}
+            <div className="flex flex-col gap-2 sm:flex-row">
               <button
-                onClick={() => setDeleteConfirm(true)}
-                className="w-full py-2 px-4 rounded-xl bg-drop/10 border border-drop/30 hover:bg-drop/20 text-xs text-drop transition flex items-center justify-center gap-2"
+                onClick={deleteConfirm ? handleDeleteAll : () => { setActionError(null); setDeleteConfirm(true); }}
+                disabled={deleteSuccess || deleteLoading}
+                aria-busy={deleteLoading}
+                className="app-button-secondary min-h-11 flex-1 border-drop/40 text-drop hover:border-drop hover:bg-drop/10"
               >
-                <Trash2 className="w-3.5 h-3.5" /> Delete All Data Permanently
+                <Trash2 aria-hidden="true" className="h-4 w-4" /> {deleteLoading ? "Deleting…" : deleteConfirm ? "Confirm permanent deletion" : "Delete all data"}
               </button>
-            ) : (
-              <div className="p-3 rounded-xl bg-drop/15 border border-drop/40 space-y-2">
-                <p className="text-xs text-drop font-semibold text-center">
-                  Are you sure? This erases all SQLite rows immediately.
-                </p>
-                <div className="flex gap-2">
-                  <button
-                    onClick={handleDeleteAll}
-                    className="flex-1 py-1.5 rounded-lg bg-drop text-white text-xs font-semibold hover:bg-red-600 transition"
-                  >
-                    Yes, Erase Everything
-                  </button>
-                  <button
-                    onClick={() => setDeleteConfirm(false)}
-                    className="flex-1 py-1.5 rounded-lg bg-surface border border-border text-xs text-textSecondary hover:text-white transition"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            )}
+              {deleteConfirm && <button disabled={deleteLoading} onClick={() => setDeleteConfirm(false)} className="app-button-secondary min-h-11 flex-1">Cancel</button>}
+            </div>
 
             {deleteSuccess && (
-              <p className="text-xs text-accent font-mono text-center flex items-center justify-center gap-1">
-                <CheckCircle2 className="w-3.5 h-3.5" /> All user telemetry deleted.
-              </p>
+              <StatusMessage kind="success">All stored telemetry has been deleted.</StatusMessage>
             )}
           </div>
+        </section>
         </div>
       </div>
     </main>

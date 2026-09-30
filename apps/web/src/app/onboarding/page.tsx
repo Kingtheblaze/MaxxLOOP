@@ -3,125 +3,113 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
-import { ShieldCheck, ArrowRight, Lock, Check } from "lucide-react";
+import { ArrowRight, CalendarDays, Cpu, Monitor, ShieldCheck } from "lucide-react";
+import { PageHeader } from "@/components/PageHeader";
+import { StatusMessage } from "@/components/StatusMessage";
+import { readConsentPreferences, writeConsentPreferences } from "@/lib/consent-storage";
 
 export default function OnboardingPage() {
   const router = useRouter();
-  const [name, setName] = useState("Aarav");
-  const [studyHours, setStudyHours] = useState("09:00 - 18:00");
   const [consentCalendar, setConsentCalendar] = useState(true);
   const [consentBrowser, setConsentBrowser] = useState(true);
   const [consentLLM, setConsentLLM] = useState(false);
-  const [llmProvider, setLlmProvider] = useState("template");
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [complete, setComplete] = useState(false);
+
+  React.useEffect(() => {
+    const saved = readConsentPreferences();
+    if (!saved) return;
+    setConsentCalendar(saved.consent_calendar);
+    setConsentBrowser(saved.consent_browser_signals);
+    setConsentLLM(saved.consent_llm_sharing);
+  }, []);
 
   const handleComplete = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
+    setError(null);
     try {
-      await api.updateConsent({
+      const preferences = {
         consent_calendar: consentCalendar,
         consent_browser_signals: consentBrowser,
         consent_llm_sharing: consentLLM,
-        llm_provider: llmProvider,
-      });
-      router.push("/");
-    } catch (e) {
-      console.error(e);
-      router.push("/");
+        llm_provider: "template",
+      };
+      await api.updateConsent(preferences);
+      writeConsentPreferences(preferences);
+      setComplete(true);
+    } catch {
+      setError("Your preferences could not be saved. Check your connection and try again.");
+    } finally {
+      setSaving(false);
     }
   };
 
   return (
-    <main className="flex flex-col flex-1 p-5 space-y-5 justify-center">
-      {/* Brand header */}
-      <div className="space-y-1 text-center">
-        <div className="w-12 h-12 rounded-2xl bg-accent/15 border border-accent/30 flex items-center justify-center mx-auto text-accent mb-2">
-          <ShieldCheck className="w-6 h-6" />
-        </div>
-        <h1 className="text-xl font-bold text-textPrimary tracking-tight">
-          Welcome to MaxxLoop
-        </h1>
-        <p className="text-xs text-textSecondary">
-          A closed-loop AI companion that protects your focus and recovery capacity.
-        </p>
+    <main id="main-content" tabIndex={-1} className="mx-auto flex w-full max-w-3xl flex-1 flex-col justify-center space-y-7 px-5 py-8 md:px-8 md:py-12">
+      <div className="mb-1 flex items-center justify-between gap-4">
+        <span className="flex items-center gap-2 text-sm font-semibold text-textPrimary">
+          <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-accent/30 bg-accent/10 text-accent"><ShieldCheck aria-hidden="true" className="h-5 w-5" /></span>
+          Setup
+        </span>
+        <span aria-current="step" className="text-xs text-textSecondary">Step 1 of 1</span>
+      </div>
+      <div aria-hidden="true" className="h-1.5 overflow-hidden rounded-full bg-surfaceHover">
+        <div className="h-full w-full rounded-full bg-accent" />
       </div>
 
-      <form onSubmit={handleComplete} className="space-y-4">
-        {/* Name input */}
-        <div className="space-y-1">
-          <label className="text-xs font-semibold text-textSecondary font-mono uppercase">
-            Your Name / Nickname
-          </label>
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="w-full px-3.5 py-2.5 rounded-xl bg-surface border border-border text-xs text-textPrimary focus:outline-none focus:border-accent"
-            placeholder="e.g. Aarav"
-            required
-          />
-        </div>
+      <PageHeader
+        eyebrow="Private by default"
+        title={complete ? "Your preferences are saved." : "Choose the signals MaxxLoop can use."}
+        description={complete ? "You can review or update these choices any time in Privacy." : "Your choices control which signals can inform capacity estimates and whether sanitized summaries may be shared with an explanation provider."}
+      />
 
-        {/* Typical study hours */}
-        <div className="space-y-1">
-          <label className="text-xs font-semibold text-textSecondary font-mono uppercase">
-            Typical Focus Hours
-          </label>
-          <input
-            type="text"
-            value={studyHours}
-            onChange={(e) => setStudyHours(e.target.value)}
-            className="w-full px-3.5 py-2.5 rounded-xl bg-surface border border-border text-xs text-textPrimary focus:outline-none focus:border-accent"
-            placeholder="09:00 - 18:00"
-          />
-        </div>
+      {error && <StatusMessage kind="error">{error}</StatusMessage>}
 
-        {/* Data Source Toggles */}
-        <div className="rounded-xl glass-panel p-3.5 border border-border space-y-3">
-          <span className="text-[10px] font-mono uppercase text-accent font-semibold block">
-            Local Telemetry Consent
-          </span>
+      {complete ? (
+        <section className="app-panel space-y-4 p-5 md:p-6">
+          <StatusMessage kind="success">Setup complete. Your consent preferences were saved.</StatusMessage>
+          <button type="button" onClick={() => router.push("/")} className="app-button-primary w-full">
+            Go to your workspace <ArrowRight aria-hidden="true" className="h-4 w-4" />
+          </button>
+        </section>
+      ) : (
+        <form onSubmit={handleComplete} className="space-y-5">
+          <fieldset className="app-panel space-y-4 p-5 md:p-6">
+            <legend className="sr-only">Signal and explanation preferences</legend>
+            <div>
+              <h2 className="app-section-title">Signal permissions</h2>
+              <p className="mt-1 text-sm text-textSecondary">Each source is optional. You can change these settings later.</p>
+            </div>
 
-          <label className="flex items-center justify-between cursor-pointer">
-            <span className="text-xs text-textPrimary">Calendar Duration & Meeting Count</span>
-            <input
-              type="checkbox"
-              checked={consentCalendar}
-              onChange={(e) => setConsentCalendar(e.target.checked)}
-              className="w-4 h-4 accent-accent"
-            />
-          </label>
+            <label className="flex min-h-16 cursor-pointer items-center justify-between gap-4 rounded-xl border border-border bg-surfaceHover/50 p-4">
+              <span className="flex items-start gap-3"><CalendarDays aria-hidden="true" className="mt-0.5 h-5 w-5 shrink-0 text-calmBlue" /><span><span className="block text-sm font-medium text-textPrimary">Calendar load</span><span className="mt-1 block text-xs leading-relaxed text-textSecondary">Meeting duration and counts. Titles and attendee details are excluded.</span></span></span>
+              <input type="checkbox" checked={consentCalendar} onChange={(e) => setConsentCalendar(e.target.checked)} aria-label="Allow calendar duration and meeting-count signals" className="h-5 w-5 shrink-0 accent-accent" />
+            </label>
 
-          <label className="flex items-center justify-between cursor-pointer">
-            <span className="text-xs text-textPrimary">Browser Tab-Switch Count</span>
-            <input
-              type="checkbox"
-              checked={consentBrowser}
-              onChange={(e) => setConsentBrowser(e.target.checked)}
-              className="w-4 h-4 accent-accent"
-            />
-          </label>
-        </div>
+            <label className="flex min-h-16 cursor-pointer items-center justify-between gap-4 rounded-xl border border-border bg-surfaceHover/50 p-4">
+              <span className="flex items-start gap-3"><Monitor aria-hidden="true" className="mt-0.5 h-5 w-5 shrink-0 text-calmBlue" /><span><span className="block text-sm font-medium text-textPrimary">Browser switching</span><span className="mt-1 block text-xs leading-relaxed text-textSecondary">Tab-switch counts during focus sessions. URLs and page content are excluded.</span></span></span>
+              <input type="checkbox" checked={consentBrowser} onChange={(e) => setConsentBrowser(e.target.checked)} aria-label="Allow browser tab-switch signals" className="h-5 w-5 shrink-0 accent-accent" />
+            </label>
 
-        {/* What Leaves Your Device */}
-        <div className="rounded-xl bg-surfaceHover/70 p-3 border border-border/70 text-[11px] font-mono text-textMuted space-y-1">
-          <span className="text-textSecondary font-semibold uppercase flex items-center gap-1.5">
-            <Lock className="w-3 h-3 text-accent" /> What Leaves Your Device:
-          </span>
-          <p>
-            <span className="text-accent">Zero raw text.</span> By default, all explanations run via local TemplateProvider. No API keys required.
-          </p>
-        </div>
+            <label className="flex min-h-16 cursor-pointer items-center justify-between gap-4 rounded-xl border border-border bg-surfaceHover/50 p-4">
+              <span className="flex items-start gap-3"><Cpu aria-hidden="true" className="mt-0.5 h-5 w-5 shrink-0 text-calmBlue" /><span><span className="block text-sm font-medium text-textPrimary">Share sanitized summaries for explanations</span><span className="mt-1 block text-xs leading-relaxed text-textSecondary">Off by default. Raw notes and personal text are excluded from the summary.</span></span></span>
+              <input type="checkbox" checked={consentLLM} onChange={(e) => setConsentLLM(e.target.checked)} aria-label="Allow sanitized summaries to be shared with an explanation provider" className="h-5 w-5 shrink-0 accent-accent" />
+            </label>
+          </fieldset>
 
-        <button
-          type="submit"
-          disabled={saving}
-          className="w-full py-3 px-4 rounded-xl bg-accent text-background font-bold text-xs hover:bg-accent-hover transition flex items-center justify-center gap-2 shadow-glow"
-        >
-          {saving ? "Setting up..." : "Enter MaxxLoop"} <ArrowRight className="w-4 h-4" />
-        </button>
-      </form>
+          <div className="rounded-xl border border-border bg-surfaceHover/40 p-4 text-sm text-textSecondary">
+            <p className="font-medium text-textPrimary">What MaxxLoop does with your choices</p>
+            <p className="mt-1 leading-relaxed">These permissions are saved to your local MaxxLoop profile. MaxxLoop is a focus and recovery companion; it does not provide medical advice.</p>
+          </div>
+
+          <button type="submit" disabled={saving} aria-busy={saving} className="app-button-primary w-full">
+            {saving ? "Saving preferences…" : "Save preferences"}
+            {!saving && <ArrowRight aria-hidden="true" className="h-4 w-4" />}
+          </button>
+        </form>
+      )}
     </main>
   );
 }

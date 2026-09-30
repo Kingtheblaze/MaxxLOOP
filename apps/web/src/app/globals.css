@@ -6,15 +6,98 @@
   :root {
     --background: #090D14;
     --surface: #101622;
+    --surface-raised: #151d2b;
+    --surface-muted: #111925;
     --accent: #00E599;
+    --accent-strong: #00C985;
+    --text-primary: #F8FAFC;
+    --text-secondary: #B0BDCE;
+    --text-muted: #93A2B6;
+    --border: #263347;
+    --danger: #FF4565;
+    --radius-panel: 1rem;
+    --content-width: 72rem;
+    color-scheme: dark;
   }
 
   body {
     background-color: #090D14;
     color: #F8FAFC;
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    line-height: 1.5;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+@layer components {
+  .app-eyebrow {
+    @apply font-mono text-[11px] font-semibold uppercase tracking-[0.14em] text-accent;
+  }
+
+  .app-section-title {
+    @apply text-base font-semibold tracking-tight text-textPrimary;
+  }
+
+  .app-panel {
+    @apply rounded-2xl border border-border bg-surface/80;
+  }
+
+  .app-page-header {
+    @apply space-y-2;
+  }
+
+  .app-page-title {
+    @apply text-2xl font-semibold tracking-tight text-textPrimary md:text-3xl;
+  }
+
+  .app-page-description {
+    @apply max-w-2xl text-sm leading-relaxed text-textSecondary;
+  }
+
+  .app-label {
+    @apply block text-sm font-medium text-textSecondary;
+  }
+
+  .app-field {
+    @apply min-h-11 w-full rounded-xl border border-border bg-surface px-3.5 py-2.5 text-sm text-textPrimary placeholder:text-textMuted transition-colors focus:border-accent;
+  }
+
+  .app-button-primary {
+    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-accent px-4 py-2.5 text-sm font-semibold text-background transition-colors hover:bg-accent-hover disabled:pointer-events-none disabled:opacity-60;
+  }
+
+  .app-button-secondary {
+    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-border bg-surfaceHover px-4 py-2.5 text-sm font-medium text-textPrimary transition-colors hover:border-borderLight hover:bg-surface disabled:pointer-events-none disabled:opacity-60;
+  }
+
+  .app-nav-link {
+    @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-medium transition-colors;
+  }
+
+  .app-status-success {
+    @apply rounded-xl border border-accent/30 bg-accent/10 p-3 text-sm text-accent;
+  }
+
+  .app-status-error {
+    @apply rounded-xl border border-drop/35 bg-drop/10 p-3 text-sm text-drop;
+  }
+
+  .app-status-info {
+    @apply rounded-xl border border-calmBlue/30 bg-calmBlue/10 p-3 text-sm text-textSecondary;
+  }
+}
+
+@layer base {
+  :where(a, button, input, select, textarea, [tabindex]):focus-visible {
+    outline: 2px solid #38BDF8;
+    outline-offset: 3px;
+  }
+
+  :where(button:disabled, [aria-disabled="true"]) {
+    cursor: not-allowed;
+    opacity: 0.65;
   }
 }
 
@@ -37,21 +120,30 @@
   background: #334155;
 }
 
-/* Glassmorphism utility */
-.glass-panel {
-  background: rgba(16, 22, 34, 0.75);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(30, 41, 59, 0.6);
+/* Keep dense labels legible on both high-density and standard displays. */
+.text-\[10px\] {
+  font-size: 0.6875rem;
+  line-height: 1rem;
 }
 
-.glass-panel-accent {
-  background: rgba(16, 22, 34, 0.85);
-  backdrop-filter: blur(16px);
-  border: 1px solid rgba(0, 229, 153, 0.25);
+.text-\[11px\] {
+  font-size: 0.75rem;
+  line-height: 1rem;
 }
 
-.glass-panel-drop {
-  background: rgba(22, 16, 24, 0.85);
-  backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 69, 101, 0.3);
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media (forced-colors: active) {
+  :where(a, button, input, select, textarea, [tabindex]):focus-visible {
+    outline: 2px solid Highlight;
+  }
 }

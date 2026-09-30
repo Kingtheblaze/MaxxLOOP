@@ -5,7 +5,8 @@ from datetime import datetime, timedelta, timezone
 import numpy as np
 
 from app.core.database import get_session
-from app.models.models import Outcome, Intervention, CapacitySnapshot, ActionPrior
+from app.core.auth import get_current_profile
+from app.models.models import Outcome, Intervention, CapacitySnapshot, ActionPrior, User
 from app.models.schemas import InsightsResponse, ActionInsight
 from app.engine.recommender import load_actions_library
 from app.engine.baseline import get_time_bucket
@@ -16,9 +17,11 @@ ACTIONS = {a["id"]: a for a in load_actions_library()}
 
 @router.get("", response_model=InsightsResponse)
 def get_insights(
-    user_id: str = Query("user_default"),
+    user: User = Depends(get_current_profile),
+    demo: bool = Query(False),
     session: Session = Depends(get_session)
 ):
+    user_id = "user_default" if demo else user.id
     # Fetch all outcomes for this user
     stmt = (
         select(Outcome, Intervention)

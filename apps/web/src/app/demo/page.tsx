@@ -81,12 +81,12 @@ export default function DemoConsolePage() {
   };
 
   return (
-    <main id="main-content" tabIndex={-1} className="mx-auto flex w-full max-w-5xl flex-1 flex-col space-y-6 px-5 pb-12 pt-6 md:px-8 md:pt-8">
+    <main id="main-content" tabIndex={-1} className="flex w-full flex-1 flex-col space-y-6 pb-12">
       {/* Header */}
-      <PageHeader eyebrow={<span className="flex items-center gap-1.5 text-amber-300"><PlayCircle aria-hidden="true" className="h-3.5 w-3.5 text-amber-400" /> Interactive walkthrough</span>} title="See one complete MaxxLoop cycle." description="Use local demo data to follow a capacity signal through a recommended action, a measured outcome, and the next learning loop." />
+      <PageHeader eyebrow={<span className="flex items-center gap-1.5 text-warning"><PlayCircle aria-hidden="true" className="h-3.5 w-3.5" /> Interactive walkthrough</span>} title="See one complete MaxxLoop cycle." description="Use local demo data to follow a capacity signal through a recommended action, a measured outcome, and the next learning loop." />
 
       {/* 90-Second Walkthrough Guide */}
-      <details className="rounded-xl border border-border bg-surfaceHover/50 p-4">
+      <details className="rounded-2xl border border-border bg-surface p-4 shadow-sm">
         <summary className="cursor-pointer text-sm font-semibold text-textPrimary focus-visible:text-accent">
           Guided demo steps
         </summary>
@@ -133,7 +133,7 @@ export default function DemoConsolePage() {
             aria-pressed={selectedPersona === "aarav"}
             className={`w-full rounded-xl border p-4 text-left transition ${
               selectedPersona === "aarav"
-                ? "bg-surfaceHover border-accent shadow-glow"
+                ? "bg-accent/10 border-accent shadow-sm"
                 : "bg-surface border-border hover:border-borderLight"
             }`}
           >
@@ -165,7 +165,7 @@ export default function DemoConsolePage() {
             aria-pressed={selectedPersona === "meera"}
             className={`w-full rounded-xl border p-4 text-left transition ${
               selectedPersona === "meera"
-                ? "bg-surfaceHover border-accent shadow-glow"
+                ? "bg-accent/10 border-accent shadow-sm"
                 : "bg-surface border-border hover:border-borderLight"
             }`}
           >
@@ -225,10 +225,10 @@ export default function DemoConsolePage() {
 
       {/* Return to Now screen */}
       <Link
-        href="/"
+        href="/dashboard?demo=1"
         className="app-button-primary w-full md:mx-auto md:max-w-lg"
       >
-        Open Hero Loop Screen (Now) <ExternalLink className="w-4 h-4" />
+        Open Demo Loop <ExternalLink className="w-4 h-4" />
       </Link>
     </main>
   );

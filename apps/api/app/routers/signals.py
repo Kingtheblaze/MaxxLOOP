@@ -1,8 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends
 from sqlmodel import Session, select
-from typing import List, Optional
+from typing import Optional
 from datetime import datetime, timezone
 
+from app.core.auth import get_current_profile
 from app.core.database import get_session
 from app.models.models import Signal, User
 from app.models.schemas import SignalCreate, SignalBatch
@@ -12,15 +13,10 @@ router = APIRouter(prefix="/signals", tags=["signals"])
 @router.post("")
 def ingest_signal(
     signal_in: SignalCreate,
-    user_id: str = Query("user_default"),
+    user: User = Depends(get_current_profile),
     session: Session = Depends(get_session)
 ):
-    # Verify user consent
-    user = session.get(User, user_id)
-    if not user:
-        user = User(id=user_id, display_name="Student User")
-        session.add(user)
-        session.commit()
+    user_id = user.id
 
     if signal_in.source == "calendar" and not user.consent_calendar:
         return {"status": "skipped", "reason": "User has not consented to calendar signals"}
@@ -43,14 +39,10 @@ def ingest_signal(
 @router.post("/batch")
 def ingest_signal_batch(
     batch: SignalBatch,
-    user_id: str = Query("user_default"),
+    user: User = Depends(get_current_profile),
     session: Session = Depends(get_session)
 ):
-    user = session.get(User, user_id)
-    if not user:
-        user = User(id=user_id, display_name="Student User")
-        session.add(user)
-        session.commit()
+    user_id = user.id
 
     saved_count = 0
     for s in batch.signals:
@@ -73,13 +65,13 @@ def ingest_signal_batch(
 
 @router.get("")
 def list_signals(
-    user_id: str = Query("user_default"),
+    user: User = Depends(get_current_profile),
     kind: Optional[str] = None,
     limit: int = 50,
     session: Session = Depends(get_session)
 ):
-    query = select(Signal).where(Signal.user_id == user_id)
+    query = select(Signal).where(Signal.user_id == user.id)
     if kind:
         query = query.where(Signal.kind == kind)
     query = query.order_by(Signal.ts.desc()).limit(limit)
-    return session.exec(query).all()
+    return [signal.model_dump(exclude={"user_id"}) for signal in session.exec(query).all()]

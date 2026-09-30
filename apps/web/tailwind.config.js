@@ -9,30 +9,35 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        background: "#090D14",
-        surface: "#101622",
-        surfaceHover: "#161E2E",
-        card: "#121A28",
-        border: "#263347",
-        borderLight: "#334155",
+        background: "rgb(var(--background) / <alpha-value>)",
+        surface: "rgb(var(--surface) / <alpha-value>)",
+        surfaceHover: "rgb(var(--surface-secondary) / <alpha-value>)",
+        card: "rgb(var(--surface-raised) / <alpha-value>)",
+        border: "rgb(var(--border) / <alpha-value>)",
+        borderLight: "rgb(var(--border-strong) / <alpha-value>)",
         accent: {
-          DEFAULT: "#00E599",
-          hover: "#00C985",
-          dim: "rgba(0, 229, 153, 0.12)",
-          glow: "rgba(0, 229, 153, 0.25)"
+          DEFAULT: "rgb(var(--primary) / <alpha-value>)",
+          hover: "rgb(var(--primary-hover) / <alpha-value>)",
+          dim: "rgba(7, 150, 105, 0.10)",
+          glow: "rgba(7, 150, 105, 0.18)"
         },
         drop: {
-          DEFAULT: "#FF4565",
-          dim: "rgba(255, 69, 101, 0.12)",
-          glow: "rgba(255, 69, 101, 0.25)"
+          DEFAULT: "#C94051",
+          dim: "rgba(201, 64, 81, 0.10)",
+          glow: "rgba(201, 64, 81, 0.16)"
         },
         calmBlue: {
-          DEFAULT: "#38BDF8",
-          dim: "rgba(56, 189, 248, 0.12)"
+          DEFAULT: "#5583B1",
+          dim: "rgba(85, 131, 177, 0.10)"
         },
-        textPrimary: "#F8FAFC",
-        textSecondary: "#94A3B8",
-        textMuted: "#93A2B6"
+        success: "rgb(var(--success) / <alpha-value>)",
+        warning: "rgb(var(--warning) / <alpha-value>)",
+        error: "rgb(var(--error) / <alpha-value>)",
+        info: "rgb(var(--info) / <alpha-value>)",
+        textPrimary: "rgb(var(--foreground) / <alpha-value>)",
+        textSecondary: "rgb(var(--foreground-secondary) / <alpha-value>)",
+        textMuted: "rgb(var(--muted) / <alpha-value>)",
+        primaryForeground: "rgb(var(--primary-foreground) / <alpha-value>)"
       },
       fontFamily: {
         sans: ["var(--font-inter)", "system-ui", "-apple-system", "sans-serif"],
@@ -41,7 +46,7 @@ module.exports = {
       boxShadow: {
         glow: "0 0 20px -3px rgba(0, 229, 153, 0.15)",
         dropGlow: "0 0 20px -3px rgba(255, 69, 101, 0.2)",
-        card: "0 4px 20px -2px rgba(0, 0, 0, 0.5)"
+        card: "0 3px 14px -3px rgba(20, 40, 30, 0.12)"
       },
       animation: {
         pulseSlow: "pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite",

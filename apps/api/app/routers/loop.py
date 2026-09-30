@@ -4,6 +4,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Optional, Dict, Any
 import json
 
+from app.core.auth import get_current_profile
 from app.core.database import get_session
 from app.models.models import Intervention, CapacitySnapshot, Outcome, Signal, User
 from app.models.schemas import (
@@ -25,14 +26,24 @@ router = APIRouter(prefix="/loop", tags=["loop"])
 # Cache loaded actions
 ACTIONS = {a["id"]: a for a in load_actions_library()}
 
-# Global demo state for time-warped loops
+# Demo time-warp markers are scoped to the demo identity and never overlap account IDs.
 TIMEWARPED_INTERVENTIONS = set()
+
+
+def _owned_intervention(session: Session, intervention_id: int, user_id: str, demo: bool = False) -> Intervention:
+    intervention = session.get(Intervention, intervention_id)
+    owner_id = "user_default" if demo else user_id
+    if not intervention or intervention.user_id != owner_id:
+        raise HTTPException(status_code=404, detail="Intervention not found")
+    return intervention
 
 @router.get("/active", response_model=LoopActiveResponse)
 def get_active_loop(
-    user_id: str = Query("user_default"),
+    user: User = Depends(get_current_profile),
+    demo: bool = Query(False),
     session: Session = Depends(get_session)
 ):
+    user_id = "user_default" if demo else user.id
     # Find most recent intervention for this user
     stmt = (
         select(Intervention)
@@ -68,7 +79,7 @@ def get_active_loop(
 
     # Determine stage and time remaining
     now = datetime.now(timezone.utc)
-    is_warped = intervention.id in TIMEWARPED_INTERVENTIONS
+    is_warped = (user_id, intervention.id) in TIMEWARPED_INTERVENTIONS
     window_sec = settings.TIMEWARP_SECONDS if is_warped else (intervention.window_minutes * 60)
 
     if intervention.status == "offered":
@@ -104,11 +115,11 @@ def get_active_loop(
 @router.post("/{intervention_id}/start")
 def start_loop_action(
     intervention_id: int,
+    user: User = Depends(get_current_profile),
+    demo: bool = Query(False),
     session: Session = Depends(get_session)
 ):
-    intervention = session.get(Intervention, intervention_id)
-    if not intervention:
-        raise HTTPException(status_code=404, detail="Intervention not found")
+    intervention = _owned_intervention(session, intervention_id, user.id, demo)
 
     intervention.status = "started"
     intervention.chosen_at = datetime.now(timezone.utc) # Reset timer to start
@@ -120,11 +131,11 @@ def start_loop_action(
 def skip_loop_action(
     intervention_id: int,
     body: Optional[LoopSkipRequest] = None,
+    user: User = Depends(get_current_profile),
+    demo: bool = Query(False),
     session: Session = Depends(get_session)
 ):
-    intervention = session.get(Intervention, intervention_id)
-    if not intervention:
-        raise HTTPException(status_code=404, detail="Intervention not found")
+    intervention = _owned_intervention(session, intervention_id, user.id, demo)
 
     intervention.status = "skipped"
     session.add(intervention)
@@ -140,11 +151,11 @@ def skip_loop_action(
 def measure_loop_outcome(
     intervention_id: int,
     measure_in: LoopMeasureRequest,
+    user: User = Depends(get_current_profile),
+    demo: bool = Query(False),
     session: Session = Depends(get_session)
 ):
-    intervention = session.get(Intervention, intervention_id)
-    if not intervention:
-        raise HTTPException(status_code=404, detail="Intervention not found")
+    intervention = _owned_intervention(session, intervention_id, user.id, demo)
 
     # Fetch initial snapshot to know pre-score
     snap_stmt = select(CapacitySnapshot).where(CapacitySnapshot.id == intervention.snapshot_id)
@@ -214,8 +225,11 @@ def measure_loop_outcome(
 def submit_feedback(
     intervention_id: int,
     fb: LoopFeedbackRequest,
+    user: User = Depends(get_current_profile),
+    demo: bool = Query(False),
     session: Session = Depends(get_session)
 ):
+    _owned_intervention(session, intervention_id, user.id, demo)
     stmt = select(Outcome).where(Outcome.intervention_id == intervention_id)
     outcome = session.exec(stmt).first()
     if not outcome:

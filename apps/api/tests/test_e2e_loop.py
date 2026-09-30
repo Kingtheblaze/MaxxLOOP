@@ -1,9 +1,11 @@
 import pytest
+from datetime import datetime, timezone
 from fastapi.testclient import TestClient
 from sqlmodel import Session, SQLModel, create_engine
 from sqlalchemy.pool import StaticPool
 from app.main import app
 from app.core.database import get_session
+from app.core.auth import AuthenticatedUser, get_current_user
 
 @pytest.fixture(name="client")
 def client_fixture():
@@ -20,6 +22,12 @@ def client_fixture():
             yield session
 
     app.dependency_overrides[get_session] = get_test_session
+    app.dependency_overrides[get_current_user] = lambda: AuthenticatedUser(
+        id="user_default",
+        name="MaxxLoop Demo Tester",
+        email="demo-tester@example.com",
+        created_at=datetime.now(timezone.utc),
+    )
     client = TestClient(app)
     yield client
     app.dependency_overrides.clear()

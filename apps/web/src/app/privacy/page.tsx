@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
+import Link from "next/link";
+import { useAuth } from "@/components/AuthProvider";
 import { api } from "@/lib/api";
 import { LLMPayloadInspection } from "@/types";
 import { DemoBar } from "@/components/DemoBar";
@@ -18,6 +20,7 @@ import {
 } from "lucide-react";
 
 export default function PrivacyPage() {
+  const { user, loading: authLoading } = useAuth();
   const [llmPayload, setLlmPayload] = useState<LLMPayloadInspection | null>(null);
   const [exportLoading, setExportLoading] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState(false);
@@ -48,6 +51,7 @@ export default function PrivacyPage() {
   }, []);
 
   useEffect(() => {
+    if (!user) return;
     const saved = readConsentPreferences();
     if (saved) {
       setConsentCalendar(saved.consent_calendar);
@@ -55,7 +59,7 @@ export default function PrivacyPage() {
       setConsentLLM(saved.consent_llm_sharing);
     }
     void loadPayload();
-  }, [loadPayload]);
+  }, [loadPayload, user]);
 
   const handleExport = async () => {
     setExportLoading(true);
@@ -138,11 +142,24 @@ export default function PrivacyPage() {
     }
   };
 
+  if (authLoading) {
+    return <main className="mx-auto flex min-h-[60vh] w-full max-w-4xl flex-1 items-center justify-center px-5 text-sm text-textSecondary" aria-live="polite">Loading privacy controls…</main>;
+  }
+
+  if (!user) {
+    return (
+      <main id="main-content" tabIndex={-1} className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-6 px-5 py-10 md:px-8 md:py-16">
+        <PageHeader eyebrow="Privacy at MaxxLoop" title="Your focus data belongs to you." description="Your personal workspace keeps check-ins and measured loops separate from other accounts. Account data controls are available after you sign in." />
+        <section className="app-panel space-y-3 p-5 md:p-6"><h2 className="app-section-title">Private by account</h2><p className="text-sm leading-relaxed text-textSecondary">MaxxLoop associates each check-in, capacity history, recommendation, and feedback with the account authenticated by the API. The demo personas stay in their own shared presentation dataset.</p><Link href="/login" className="app-button-primary">Sign in to privacy controls</Link></section>
+      </main>
+    );
+  }
+
   return (
     <main id="main-content" tabIndex={-1} className="mx-auto flex w-full max-w-5xl flex-1 flex-col pb-10">
       <DemoBar compact />
 
-      <div className="mx-auto w-full space-y-5 p-5 md:p-8">
+      <div className="mx-auto w-full space-y-5">
         <PageHeader eyebrow={<span className="flex items-center gap-2"><Lock aria-hidden="true" className="h-3.5 w-3.5" /> Your data, your controls</span>} title="Privacy and data" description="Review the signals MaxxLoop can use, inspect sanitized explanation payloads, and export or erase your telemetry." />
 
         {actionError && <StatusMessage kind="error">{actionError}</StatusMessage>}

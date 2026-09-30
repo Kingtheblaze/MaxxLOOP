@@ -3,6 +3,7 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 async function request<T = any>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`${API_BASE}${path}`, {
     ...init,
+    credentials: "include",
     headers: { "Content-Type": "application/json", ...init?.headers },
   });
   const body = await response.json().catch(() => ({}));
@@ -14,12 +15,18 @@ async function request<T = any>(path: string, init?: RequestInit): Promise<T> {
 
 const post = (path: string, body?: unknown) =>
   request(path, { method: "POST", body: JSON.stringify(body ?? {}) });
+const demoQuery = (demo: boolean) => demo ? "?demo=true" : "";
 
 export const api = {
-  getCapacity: () => request("/capacity/now"),
-  getActiveLoop: () => request("/loop/active"),
-  getInsights: () => request("/insights"),
+  signUp: (data: { name: string; email: string; password: string }) => post("/auth/signup", data),
+  signIn: (data: { email: string; password: string }) => post("/auth/login", data),
+  signOut: () => post("/auth/logout"),
+  getCurrentUser: () => request("/auth/me"),
+  getCapacity: (demo = false) => request(`/capacity/now${demoQuery(demo)}`),
+  getActiveLoop: (demo = false) => request(`/loop/active${demoQuery(demo)}`),
+  getInsights: (demo = false) => request(`/insights${demoQuery(demo)}`),
   getDemoStatus: () => request("/demo/status"),
+  getHistory: () => request("/signals?limit=100"),
   getLLMPayload: () => request("/privacy/llm-payload"),
   exportData: () => request("/privacy/export"),
   deleteData: () => request("/privacy/data", { method: "DELETE" }),
@@ -38,8 +45,8 @@ export const api = {
   triggerDrop: () => post("/demo/trigger-drop"),
   timewarp: () => post("/demo/timewarp"),
   submitCheckin: (data: unknown) => post("/checkins", data),
-  startLoopAction: (id: number) => post(`/loop/${id}/start`),
-  skipLoopAction: (id: number, reason: string) => post(`/loop/${id}/skip`, { reason }),
-  measureLoopOutcome: (id: number, data: unknown) => post(`/loop/${id}/measure`, data),
-  submitFeedback: (id: number, helpful: boolean) => post(`/loop/${id}/feedback`, { helpful }),
+  startLoopAction: (id: number, demo = false) => post(`/loop/${id}/start${demoQuery(demo)}`),
+  skipLoopAction: (id: number, reason: string, demo = false) => post(`/loop/${id}/skip${demoQuery(demo)}`, { reason }),
+  measureLoopOutcome: (id: number, data: unknown, demo = false) => post(`/loop/${id}/measure${demoQuery(demo)}`, data),
+  submitFeedback: (id: number, helpful: boolean, demo = false) => post(`/loop/${id}/feedback${demoQuery(demo)}`, { helpful }),
 };

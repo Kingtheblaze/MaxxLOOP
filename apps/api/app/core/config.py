@@ -9,6 +9,9 @@ class Settings(BaseSettings):
     
     # Database
     DATABASE_URL: str = "sqlite:///./maxxloop.db"
+    MONGODB_URI: str = "mongodb://localhost:27017/"
+    MONGODB_DATABASE: str = "maxxloop"
+    SESSION_COOKIE_NAME: str = "maxxloop_session"
     
     # LLM Settings
     LLM_PROVIDER: str = "template"  # template | gemini | ollama | openai

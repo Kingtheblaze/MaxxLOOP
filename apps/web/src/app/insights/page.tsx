@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { api } from "@/lib/api";
 import { InsightsData } from "@/types";
 import { DemoBar } from "@/components/DemoBar";
@@ -26,29 +26,37 @@ export default function InsightsPage() {
   const [data, setData] = useState<InsightsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [demoMode, setDemoMode] = useState(false);
+  const [routeReady, setRouteReady] = useState(false);
 
-  const loadInsights = async () => {
+  useEffect(() => {
+    setDemoMode(new URLSearchParams(window.location.search).get("demo") === "1");
+    setRouteReady(true);
+  }, []);
+
+  const loadInsights = useCallback(async () => {
     setLoading(true);
     setLoadError(null);
     try {
-      setData(await api.getInsights());
+      setData(await api.getInsights(demoMode));
     } catch {
       setLoadError("Insights could not be loaded. Check the API connection and retry.");
     } finally {
       setLoading(false);
     }
-  };
+  }, [demoMode]);
 
   useEffect(() => {
+    if (!routeReady) return;
     void loadInsights();
-  }, []);
+  }, [loadInsights, routeReady]);
 
   return (
     <main id="main-content" tabIndex={-1} className="flex flex-col flex-1 pb-10">
       <DemoBar onRefresh={loadInsights} compact />
 
-      <div className="mx-auto w-full max-w-5xl space-y-5 p-5 md:space-y-6 md:p-8">
-        <PageHeader eyebrow="Recommender intelligence" title="Personal insights" description="See which actions have helped and how your capacity has changed across measured loops." />
+      <div className="w-full space-y-5 md:space-y-6">
+        <PageHeader eyebrow={demoMode ? "Presentation data · separate from your account" : "Recommender intelligence"} title={demoMode ? "Demo loop insights" : "Personal insights"} description={demoMode ? "See results from the separate demo dataset. These measures do not include your personal account data." : "See which actions have helped and how your capacity has changed across measured loops."} />
 
         {loadError && (
           <StatusMessage kind="error" className="items-center" action={
@@ -71,7 +79,7 @@ export default function InsightsPage() {
               <span className="text-3xl font-semibold font-mono text-accent">
                 {loading || !data?.total_loops_closed ? "—" : `${data.pct_helpful}%`}
               </span>
-              <p className="text-[10px] text-textMuted mt-0.5 leading-snug">
+              <p className="mt-1 text-xs leading-snug text-textSecondary">
                 Actions rated helpful by you
               </p>
             </div>
@@ -87,7 +95,7 @@ export default function InsightsPage() {
               <span className="text-3xl font-semibold font-mono text-calmBlue">
                 {loading || !data?.total_loops_closed ? "—" : `${data.avg_score_improvement > 0 ? "+" : ""}${data.avg_score_improvement}`}
               </span>
-              <p className="text-[10px] text-textMuted mt-0.5 leading-snug">
+              <p className="mt-1 text-xs leading-snug text-textSecondary">
                 Measured points vs estimated no-action change
               </p>
             </div>
@@ -97,7 +105,7 @@ export default function InsightsPage() {
         {/* Streak & Closed Loops Badge */}
         <div className="app-panel flex items-center justify-between gap-3 p-4 md:px-5">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-full bg-amber-400/10 flex items-center justify-center text-amber-400">
+            <div className="w-8 h-8 rounded-full bg-warning/10 flex items-center justify-center text-warning">
               <Flame className="w-4 h-4" />
             </div>
             <div>
@@ -109,7 +117,7 @@ export default function InsightsPage() {
               </p>
             </div>
           </div>
-          <span className="text-[10px] font-mono px-2 py-1 rounded bg-surface text-accent border border-border">
+            <span className="rounded-full bg-accent/10 px-3 py-1 text-xs font-medium text-accent">
             {loading ? "Loading" : data?.total_loops_closed ? "Learning" : "No loops yet"}
           </span>
         </div>
@@ -122,7 +130,7 @@ export default function InsightsPage() {
                 What Works For You (Ranked by Net Effect)
               </h2>
               <p className="mt-1 text-xs text-textSecondary">
-                Posterior means & 95% Credible Intervals
+              Measured outcomes from your completed loops
               </p>
             </div>
             <Award className="w-4 h-4 text-accent" />
@@ -133,7 +141,7 @@ export default function InsightsPage() {
               data.top_actions.map((act, index) => (
                 <div
                   key={act.action_id}
-                  className="bg-surfaceHover/60 rounded-xl p-4 border border-border/50 space-y-2"
+                  className="space-y-2 rounded-xl border border-border bg-surfaceMuted/60 p-4"
                 >
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-semibold text-textPrimary">
@@ -204,7 +212,7 @@ export default function InsightsPage() {
               <BarChart data={data.weekly_trend}>
                 <XAxis
                   dataKey="day"
-                  stroke="#8190A5"
+                  stroke="rgb(var(--chart-label))"
                   fontSize={12}
                   tickLine={false}
                   axisLine={false}
@@ -225,7 +233,7 @@ export default function InsightsPage() {
                     return null;
                   }}
                 />
-                <Bar dataKey="score" fill="#00E599" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="score" fill="rgb(var(--primary))" radius={[5, 5, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div> : <p role="status" className="flex h-48 items-center justify-center rounded-xl border border-border bg-surfaceHover/40 px-4 text-center text-sm text-textSecondary">{loading ? "Loading capacity trend…" : loadError ? "Capacity trend is unavailable right now." : "No capacity trend is available yet."}</p>}

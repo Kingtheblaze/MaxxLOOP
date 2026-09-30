@@ -18,7 +18,7 @@ def get_provider(provider_name: str = None) -> BaseLLMProvider:
     return TemplateProvider()
 
 # Global state to record the last LLM payload sent and received for transparency & privacy inspection
-LAST_LLM_TRANSACTION = {
+_EMPTY_LLM_TRANSACTION = {
     "last_payload_sent": {},
     "last_response_received": {},
     "provider_used": "template",
@@ -30,6 +30,11 @@ LAST_LLM_TRANSACTION = {
         "ip_address_and_device_identifiers"
     ]
 }
+LLM_TRANSACTIONS: Dict[str, Dict[str, Any]] = {}
+
+
+def get_llm_transaction(user_id: str) -> Dict[str, Any]:
+    return LLM_TRANSACTIONS.get(user_id, _EMPTY_LLM_TRANSACTION)
 
 async def generate_explanation_with_fallback(
     score: float,
@@ -37,7 +42,8 @@ async def generate_explanation_with_fallback(
     drivers: List[Dict[str, Any]],
     action: Dict[str, Any],
     requested_provider: str = None,
-    tone_preference: str = "calm"
+    tone_preference: str = "calm",
+    transaction_user_id: str = "demo",
 ) -> tuple[ExplanationSchema, str]:
     """
     Attempts generation with requested provider.
@@ -68,8 +74,12 @@ async def generate_explanation_with_fallback(
         )
 
     # Update inspection log
-    LAST_LLM_TRANSACTION["last_payload_sent"] = sanitized_input
-    LAST_LLM_TRANSACTION["last_response_received"] = explanation.model_dump()
-    LAST_LLM_TRANSACTION["provider_used"] = provider_name
+    LLM_TRANSACTIONS[transaction_user_id] = {
+        "last_payload_sent": sanitized_input,
+        "last_response_received": explanation.model_dump(),
+        "provider_used": provider_name,
+        "sanitized": True,
+        "raw_personal_data_excluded": _EMPTY_LLM_TRANSACTION["raw_personal_data_excluded"],
+    }
 
     return explanation, provider_name

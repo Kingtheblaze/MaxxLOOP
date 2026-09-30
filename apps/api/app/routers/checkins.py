@@ -1,9 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
 from datetime import datetime, timezone
 from typing import Dict, Any
 
 from app.core.database import get_session
+from app.core.auth import get_current_profile
 from app.core.safety import scan_text_for_crisis
 from app.models.models import Signal, CapacitySnapshot, Intervention, User
 from app.models.schemas import CheckinCreate
@@ -20,7 +21,7 @@ router = APIRouter(prefix="/checkins", tags=["checkins"])
 @router.post("")
 async def create_checkin(
     checkin: CheckinCreate,
-    user_id: str = Query("user_default"),
+    user: User = Depends(get_current_profile),
     session: Session = Depends(get_session)
 ):
     # 1. Safety interceptor: Scan note for crisis keywords
@@ -33,12 +34,7 @@ async def create_checkin(
             "crisis_card": helpline_data
         }
 
-    # Ensure user exists
-    user = session.get(User, user_id)
-    if not user:
-        user = User(id=user_id, display_name="Student User")
-        session.add(user)
-        session.commit()
+    user_id = user.id
 
     now = datetime.now(timezone.utc)
 
@@ -120,7 +116,8 @@ async def create_checkin(
             baseline=baseline,
             drivers=top_drivers,
             action=chosen_action,
-            requested_provider=user.llm_provider
+            requested_provider=user.llm_provider,
+            transaction_user_id=user_id,
         )
 
         intervention = Intervention(

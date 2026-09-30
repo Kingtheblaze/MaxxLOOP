@@ -4,6 +4,7 @@ from datetime import datetime, timedelta, timezone
 from typing import List, Dict, Any
 
 from app.core.database import get_session
+from app.core.auth import get_current_profile
 from app.models.models import CapacitySnapshot, User
 from app.models.schemas import CapacityResponse
 from app.core.safety import check_persistent_low_capacity
@@ -12,15 +13,11 @@ router = APIRouter(prefix="/capacity", tags=["capacity"])
 
 @router.get("/now", response_model=CapacityResponse)
 def get_current_capacity(
-    user_id: str = Query("user_default"),
+    user: User = Depends(get_current_profile),
+    demo: bool = Query(False),
     session: Session = Depends(get_session)
 ):
-    # Ensure user exists
-    user = session.get(User, user_id)
-    if not user:
-        user = User(id=user_id, display_name="Student User")
-        session.add(user)
-        session.commit()
+    user_id = "user_default" if demo else user.id
 
     # Get latest snapshot
     stmt = (

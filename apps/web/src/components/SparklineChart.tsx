@@ -48,7 +48,7 @@ export const SparklineChart: React.FC<SparklineChartProps> = ({
       <div className="flex items-center justify-between text-[11px] text-textMuted font-mono mb-1">
         <span>14-DAY CAPACITY TRAJECTORY</span>
         <span className="flex items-center gap-1.5">
-          <span className="w-2 h-[2px] bg-slate-500 inline-block" />
+          <span className="w-2 h-[2px] bg-borderLight inline-block" />
           Base {baseline}
         </span>
       </div>
@@ -57,8 +57,8 @@ export const SparklineChart: React.FC<SparklineChartProps> = ({
           <AreaChart data={formattedData} margin={{ top: 4, right: 2, left: 2, bottom: 0 }}>
             <defs>
               <linearGradient id="capacityGradient" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#00E599" stopOpacity={0.25} />
-                <stop offset="95%" stopColor="#00E599" stopOpacity={0.0} />
+                <stop offset="5%" stopColor="rgb(var(--primary))" stopOpacity={0.2} />
+                <stop offset="95%" stopColor="rgb(var(--primary))" stopOpacity={0.0} />
               </linearGradient>
             </defs>
             <YAxis domain={[0, 100]} hide />
@@ -82,14 +82,14 @@ export const SparklineChart: React.FC<SparklineChartProps> = ({
             {/* 50 Baseline Reference Line */}
             <ReferenceLine
               y={baseline}
-              stroke="#334155"
+              stroke="rgb(var(--chart-grid))"
               strokeDasharray="3 3"
               strokeWidth={1}
             />
             <Area
               type="monotone"
               dataKey="score"
-              stroke="#00E599"
+              stroke="rgb(var(--primary))"
               strokeWidth={2}
               fillOpacity={1}
               fill="url(#capacityGradient)"

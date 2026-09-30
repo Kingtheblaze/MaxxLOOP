@@ -6,6 +6,7 @@ import json
 from typing import Optional
 
 from app.core.database import get_session
+from app.core.auth import AuthenticatedUser, get_current_user
 from app.models.models import User, Signal, CapacitySnapshot, Intervention, Outcome, ActionPrior
 from app.models.schemas import DemoSeedRequest, DemoTriggerDropRequest, DemoTimewarpRequest
 from app.engine.baseline import BaselineEngine
@@ -53,6 +54,7 @@ CURRENT_DEMO_STATE = {
 @router.post("/seed")
 def seed_demo_persona(
     req: DemoSeedRequest,
+    _current_user: AuthenticatedUser = Depends(get_current_user),
     session: Session = Depends(get_session)
 ):
     persona_key = req.persona.lower()
@@ -63,8 +65,13 @@ def seed_demo_persona(
     user_id = "user_default"
 
     # Reset existing user data
-    session.exec(delete(Outcome))
-    session.exec(delete(Intervention))
+    demo_interventions = session.exec(
+        select(Intervention).where(Intervention.user_id == user_id)
+    ).all()
+    demo_intervention_ids = [item.id for item in demo_interventions]
+    if demo_intervention_ids:
+        session.exec(delete(Outcome).where(Outcome.intervention_id.in_(demo_intervention_ids)))
+    session.exec(delete(Intervention).where(Intervention.user_id == user_id))
     session.exec(delete(CapacitySnapshot).where(CapacitySnapshot.user_id == user_id))
     session.exec(delete(Signal).where(Signal.user_id == user_id))
     session.exec(delete(ActionPrior).where(ActionPrior.user_id == user_id))
@@ -191,6 +198,7 @@ def np_clip(val, min_v, max_v):
 @router.post("/trigger-drop")
 async def trigger_capacity_drop(
     req: Optional[DemoTriggerDropRequest] = None,
+    _current_user: AuthenticatedUser = Depends(get_current_user),
     session: Session = Depends(get_session)
 ):
     """
@@ -261,7 +269,8 @@ async def trigger_capacity_drop(
         baseline=50.0,
         drivers=top_drivers,
         action=chosen_action,
-        requested_provider=user.llm_provider
+        requested_provider=user.llm_provider,
+        transaction_user_id="demo",
     )
 
     intervention = Intervention(
@@ -298,6 +307,7 @@ async def trigger_capacity_drop(
 @router.post("/timewarp")
 def timewarp_window(
     req: Optional[DemoTimewarpRequest] = None,
+    _current_user: AuthenticatedUser = Depends(get_current_user),
     session: Session = Depends(get_session)
 ):
     """
@@ -316,7 +326,7 @@ def timewarp_window(
         raise HTTPException(status_code=400, detail="No active intervention to timewarp.")
 
     # Mark as timewarped and shift chosen_at back in time to simulate window elapsed
-    TIMEWARPED_INTERVENTIONS.add(active.id)
+    TIMEWARPED_INTERVENTIONS.add(("user_default", active.id))
     active.status = "started"
     active.chosen_at = datetime.now(timezone.utc) - timedelta(minutes=active.window_minutes + 1)
     session.add(active)
@@ -330,7 +340,7 @@ def timewarp_window(
     }
 
 @router.get("/status")
-def get_demo_status():
+def get_demo_status(_current_user: AuthenticatedUser = Depends(get_current_user)):
     return {
         "demo_mode": settings.DEMO_MODE,
         "persona": CURRENT_DEMO_STATE["persona"],

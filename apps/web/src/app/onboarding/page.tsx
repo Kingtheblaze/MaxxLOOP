@@ -47,7 +47,7 @@ export default function OnboardingPage() {
   };
 
   return (
-    <main id="main-content" tabIndex={-1} className="mx-auto flex w-full max-w-3xl flex-1 flex-col justify-center space-y-7 px-5 py-8 md:px-8 md:py-12">
+    <main id="main-content" tabIndex={-1} className="mx-auto flex w-full max-w-3xl flex-1 flex-col justify-center space-y-7 py-8 md:py-12">
       <div className="mb-1 flex items-center justify-between gap-4">
         <span className="flex items-center gap-2 text-sm font-semibold text-textPrimary">
           <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-accent/30 bg-accent/10 text-accent"><ShieldCheck aria-hidden="true" className="h-5 w-5" /></span>
@@ -70,7 +70,7 @@ export default function OnboardingPage() {
       {complete ? (
         <section className="app-panel space-y-4 p-5 md:p-6">
           <StatusMessage kind="success">Setup complete. Your consent preferences were saved.</StatusMessage>
-          <button type="button" onClick={() => router.push("/")} className="app-button-primary w-full">
+          <button type="button" onClick={() => router.push("/dashboard")} className="app-button-primary w-full">
             Go to your workspace <ArrowRight aria-hidden="true" className="h-4 w-4" />
           </button>
         </section>

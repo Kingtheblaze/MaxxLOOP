@@ -5,6 +5,7 @@ from contextlib import asynccontextmanager
 from app.core.config import settings
 from app.core.database import init_db
 from app.routers import (
+    auth,
     signals,
     checkins,
     capacity,
@@ -32,7 +33,7 @@ app = FastAPI(
 # CORS configuration for local frontend PWA
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000", "*"],
+    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -40,6 +41,7 @@ app.add_middleware(
 
 # Mount all domain routers
 app.include_router(signals.router)
+app.include_router(auth.router)
 app.include_router(checkins.router)
 app.include_router(capacity.router)
 app.include_router(loop.router)

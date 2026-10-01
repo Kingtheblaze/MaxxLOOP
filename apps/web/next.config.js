@@ -31,11 +31,11 @@ function getApiOrigin() {
 const nextConfig = {
   reactStrictMode: true,
   async rewrites() {
-    const apiOrigin = getApiOrigin();
+    if (process.env.VERCEL) return [];
     return [
       {
         source: "/api/:path*",
-        destination: `${apiOrigin}/:path*`,
+        destination: "http://localhost:8000/:path*",
       },
     ];
   },

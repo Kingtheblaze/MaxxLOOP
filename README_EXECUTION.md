@@ -31,30 +31,29 @@ Both the API and Web services will start up automatically with volume mounts.
 
 ---
 
-## ☁️ Deploy the Web App to Vercel
+## ☁️ Deploy the Full App to Vercel
 
-The Next.js app is deployed to Vercel from `apps/web`, where `vercel.json` explicitly selects Next.js and the npm install/build commands. Set Vercel's **Root Directory** to `apps/web` so it reads that configuration. The FastAPI service must be deployed separately to a Python host that supports persistent storage; this project uses SQLite for app data and MongoDB for accounts and sessions, so Vercel serverless functions are not a drop-in host for the API.
+The root `vercel.json` defines a single Vercel **Services** project: Next.js serves `/`, and FastAPI serves `/api/*`. In the import screen, keep **Root Directory** at `./` and choose **Services**. This uses Vercel's Services feature; if the Vercel account does not have Services access, enable it or deploy the web and API as separate projects.
 
-1. Deploy `apps/api` first as a Docker web service on a Python host that supports persistent disks. Set its root directory to `apps/api`, use its `Dockerfile`, and mount a persistent disk at `/data`. Configure `DATABASE_URL=sqlite:////data/maxxloop.db`, `MONGODB_URI` with your MongoDB Atlas connection string, `MONGODB_DATABASE=maxxloop`, and `APP_ENV=production`. For Gemini explanations, set `LLM_PROVIDER=gemini` and add `GEMINI_API_KEY` as a secret on that API host. The container uses the host's `PORT` automatically. Do not use `mongodb://localhost:27017/` for a remotely hosted API.
-2. In Vercel, import the repository and set **Root Directory** to `apps/web`. Keep the framework as Next.js and the build command as `npm run build`.
-3. Add the Vercel environment variable `API_INTERNAL_URL` in both **Production** and **Preview**, with the public HTTPS origin of the deployed API, for example `https://maxxloop-api.example.com` (no trailing slash). Vercel builds fail if it is missing or is not an HTTPS origin. Redeploy after adding it.
-4. Confirm the API responds at `https://<api-host>/health`, then open the Vercel deployment and test sign-up, sign-in, and the demo flow.
+Vercel can run the FastAPI backend without Docker. MaxxLoop still needs hosted databases: SQLite files are not durable across serverless function instances, and `mongodb://localhost:27017/` is only reachable on your own computer.
 
-The web app sends requests to same-origin `/api/...` routes; Next.js rewrites those requests to `API_INTERNAL_URL`. This keeps session cookies first-party in the browser. Do not set `NEXT_PUBLIC_API_URL`, `GEMINI_API_KEY`, or `MONGODB_URI` in the Vercel web project; provider and database secrets belong only on the API host.
+1. Create a PostgreSQL database using Vercel's Marketplace (Neon) or another hosted PostgreSQL provider. Copy its pooled connection string and set `DATABASE_URL` in Vercel. The API accepts `postgres://` and `postgresql://` URLs and uses the psycopg driver.
+2. Set these Vercel environment variables for **Production** and **Preview**: `DATABASE_URL`, `MONGODB_URI` (MongoDB Atlas), `MONGODB_DATABASE=maxxloop`, `APP_ENV=production`, `LLM_PROVIDER=gemini`, and `GEMINI_API_KEY`. Keep all credentials server-side; do not prefix them with `NEXT_PUBLIC_`.
+3. Import the repository with Root Directory `./` and Application Preset **Services**, then deploy. The shared domain routes `/api/*` to FastAPI and all other paths to Next.js. No `API_INTERNAL_URL`, separate API host, or Docker service is required.
+4. Check `https://<deployment>.vercel.app/health`, then test sign-up, sign-in, the demo loop, and Gemini explanations.
 
 ### Vercel CLI (PowerShell)
 
-Run these commands from the repository root after installing the Vercel CLI and linking the project:
+Run from the repository root after installing Vercel CLI 48.1.8 or newer:
 
 ```powershell
-cd "D:\Riot Games\Anime Quiz\PROJECTT\MaxxLOOP\apps\web"
+Set-Location "D:\\Riot Games\\Anime Quiz\\PROJECTT\\MaxxLOOP"
 vercel link
-vercel env add API_INTERNAL_URL production
-vercel env add API_INTERNAL_URL preview
+vercel dev
 vercel --prod
 ```
 
-Enter the API's HTTPS origin when `vercel env add` prompts for the value. In the Vercel project settings, also set the **Root Directory** to `apps/web` if you linked the project from the repository root instead.
+Add the database and Gemini/MongoDB secrets in Vercel Project Settings before deploying. Vercel Services routes the frontend's same-origin `/api/...` calls directly to FastAPI, preserving the session-cookie origin.
 
 ---
 
@@ -70,7 +69,7 @@ venv\Scripts\activate
 # On Mac/Linux:
 # source venv/bin/activate
 
-pip install -r requirements.txt
+pip install -r requirements-dev.txt
 uvicorn app.main:app --reload --port 8000
 ```
 *Health verification*: Open `http://localhost:8000/health` in your browser.

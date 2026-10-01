@@ -2,7 +2,7 @@
 
 setup:
 	@echo "Setting up MaxxLoop backend and frontend..."
-	cd apps/api && python -m pip install -r requirements.txt
+	cd apps/api && python -m pip install -r requirements-dev.txt
 	cd apps/web && npm install
 
 dev:

@@ -31,6 +31,33 @@ Both the API and Web services will start up automatically with volume mounts.
 
 ---
 
+## ☁️ Deploy the Web App to Vercel
+
+The Next.js app is deployed to Vercel from `apps/web`. The FastAPI service must be deployed separately to a Python host that supports persistent storage; this project uses SQLite for app data and MongoDB for accounts and sessions, so Vercel serverless functions are not a drop-in host for the API.
+
+1. Deploy `apps/api` to a persistent Python host and configure `DATABASE_URL` for a persistent SQLite volume (or a supported SQL database), `MONGODB_URI` for MongoDB Atlas, `MONGODB_DATABASE`, and `APP_ENV=production`. For Gemini explanations, set `LLM_PROVIDER=gemini` and add `GEMINI_API_KEY` as a secret on that API host. Do not use `mongodb://localhost:27017/` for a remotely hosted API.
+2. In Vercel, import the repository and set **Root Directory** to `apps/web`. Keep the framework as Next.js and the build command as `npm run build`.
+3. Add the Vercel environment variable `API_INTERNAL_URL` in both **Production** and **Preview**, with the public HTTPS origin of the deployed API, for example `https://maxxloop-api.example.com` (no trailing slash). Vercel builds fail if it is missing or is not an HTTPS origin. Redeploy after adding it.
+4. Confirm the API responds at `https://<api-host>/health`, then open the Vercel deployment and test sign-up, sign-in, and the demo flow.
+
+The web app sends requests to same-origin `/api/...` routes; Next.js rewrites those requests to `API_INTERNAL_URL`. This keeps session cookies first-party in the browser. Do not set `NEXT_PUBLIC_API_URL`, `GEMINI_API_KEY`, or `MONGODB_URI` in the Vercel web project; provider and database secrets belong only on the API host.
+
+### Vercel CLI (PowerShell)
+
+Run these commands from the repository root after installing the Vercel CLI and linking the project:
+
+```powershell
+cd "D:\Riot Games\Anime Quiz\PROJECTT\MaxxLOOP\apps\web"
+vercel link
+vercel env add API_INTERNAL_URL production
+vercel env add API_INTERNAL_URL preview
+vercel --prod
+```
+
+Enter the API's HTTPS origin when `vercel env add` prompts for the value. In the Vercel project settings, also set the **Root Directory** to `apps/web` if you linked the project from the repository root instead.
+
+---
+
 ## 🛠️ Step-by-Step Manual Launch (Windows / Mac / Linux)
 
 ### 1. Terminal 1 — Backend (FastAPI)

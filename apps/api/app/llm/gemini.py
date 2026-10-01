@@ -59,7 +59,7 @@ class GeminiProvider(BaseLLMProvider):
 
         user_prompt = f"Analyze this capacity snapshot and recommend the action:\n{redacted_payload}"
 
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={self.api_key}"
+        url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent"
         body = {
             "contents": [
                 {"role": "user", "parts": [{"text": f"{SYSTEM_PROMPT}\n\n{user_prompt}"}]}
@@ -71,7 +71,7 @@ class GeminiProvider(BaseLLMProvider):
         }
 
         async with httpx.AsyncClient(timeout=10.0) as client:
-            resp = await client.post(url, json=body)
+            resp = await client.post(url, json=body, headers={"x-goog-api-key": self.api_key})
             resp.raise_for_status()
             data = resp.json()
             raw_text = data["candidates"][0]["content"]["parts"][0]["text"]

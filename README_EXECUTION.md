@@ -33,7 +33,7 @@ Both the API and Web services will start up automatically with volume mounts.
 
 ## ☁️ Deploy the Web App to Vercel
 
-The Next.js app is deployed to Vercel from `apps/web`. The FastAPI service must be deployed separately to a Python host that supports persistent storage; this project uses SQLite for app data and MongoDB for accounts and sessions, so Vercel serverless functions are not a drop-in host for the API.
+The Next.js app is deployed to Vercel from `apps/web`, where `vercel.json` explicitly selects Next.js and the npm install/build commands. Set Vercel's **Root Directory** to `apps/web` so it reads that configuration. The FastAPI service must be deployed separately to a Python host that supports persistent storage; this project uses SQLite for app data and MongoDB for accounts and sessions, so Vercel serverless functions are not a drop-in host for the API.
 
 1. Deploy `apps/api` to a persistent Python host and configure `DATABASE_URL` for a persistent SQLite volume (or a supported SQL database), `MONGODB_URI` for MongoDB Atlas, `MONGODB_DATABASE`, and `APP_ENV=production`. For Gemini explanations, set `LLM_PROVIDER=gemini` and add `GEMINI_API_KEY` as a secret on that API host. Do not use `mongodb://localhost:27017/` for a remotely hosted API.
 2. In Vercel, import the repository and set **Root Directory** to `apps/web`. Keep the framework as Next.js and the build command as `npm run build`.
